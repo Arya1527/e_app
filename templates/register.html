@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body{
+            background: linear-gradient(135deg,#4e54c8,#8f94fb);
+            min-height:100vh;
+            font-family:'Segoe UI',sans-serif;
+        }
+
+        .register-card{
+            background:rgba(255,255,255,.96);
+            border-radius:20px;
+            box-shadow:0 15px 40px rgba(0,0,0,.25);
+            padding:35px;
+        }
+
+        .section-title{
+            background:linear-gradient(90deg,#0d6efd,#6610f2);
+            color:#fff;
+            padding:12px 18px;
+            border-radius:10px;
+            margin-bottom:20px;
+            font-size:18px;
+        }
+
+        .form-control,
+        .form-select{
+            border-radius:10px;
+            padding:12px;
+            transition:0.3s;
+        }
+
+        .form-control:focus,
+        .form-select:focus{
+            border-color:#4e54c8;
+            box-shadow:0 0 10px rgba(78,84,200,.35);
+        }
+
+        label{
+            font-weight:600;
+            margin-bottom:5px;
+        }
+
+        .btn-save{
+            background:linear-gradient(90deg,#0d6efd,#6610f2);
+            color:white;
+            border:none;
+            border-radius:10px;
+            padding:13px;
+            font-size:20px;
+            font-weight:bold;
+            transition:.3s;
+        }
+
+        .btn-save:hover{
+            transform:translateY(-2px);
+            box-shadow:0 10px 20px rgba(0,0,0,.25);
+            color:white;
+        }
+
+        .title{
+            font-weight:bold;
+            color:#0d6efd;
+        }
+
+        .photo-preview-box {
+            width: 140px;
+            height: 140px;
+            border: 2px dashed #0d6efd;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f8f9fa;
+            margin: auto;
+        }
+
+        .photo-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container py-5">
+
+<div class="register-card mx-auto" style="max-width:900px;">
+
+    <a href="/" class="btn btn-outline-primary rounded-pill mb-4">
+        <i class="bi bi-house-door-fill"></i> Dashboard
+    </a>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show text-center fw-bold">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="text-center mb-4">
+        <h2 class="title">
+            <i class="bi bi-person-vcard-fill"></i>
+            Student Registration
+        </h2>
+        <p class="text-muted">School Management System</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <!-- Student Photo Section -->
+        <div class="section-title">
+            <i class="bi bi-camera-fill"></i>
+            Student Photo
+        </div>
+
+        <div class="row g-3 text-center mb-4 align-items-center">
+            <div class="col-md-4">
+                <div class="photo-preview-box mb-2">
+                    <img id="photoPreview" src="https://via.placeholder.com/150?text=No+Photo" alt="Preview">
+                </div>
+                <small class="text-muted">Photo Preview</small>
+            </div>
+
+            <div class="col-md-8">
+                <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
+                    <label class="btn btn-outline-primary rounded-pill">
+                        <i class="bi bi-image"></i> Gallery / File
+                        <input type="file" name="student_photo" id="fileInput" accept="image/*" class="d-none" onchange="previewFile(this)">
+                    </label>
+
+                    <label class="btn btn-outline-secondary rounded-pill">
+                        <i class="bi bi-camera-rearedge"></i> Back Camera
+                        <input type="file" name="student_photo_back" accept="image/*" capture="environment" class="d-none" onchange="previewFile(this)">
+                    </label>
+
+                    <label class="btn btn-outline-info rounded-pill">
+                        <i class="bi bi-camera-fill"></i> Front Camera
+                        <input type="file" name="student_photo_front" accept="image/*" capture="user" class="d-none" onchange="previewFile(this)">
+                    </label>
+
+                    <button type="button" class="btn btn-purple btn-dark rounded-pill" data-bs-toggle="modal" data-bs-target="#cameraModal" onclick="startCamera()">
+                        <i class="bi bi-webcam-fill"></i> Open Live Camera
+                    </button>
+                </div>
+                <input type="hidden" name="captured_image_data" id="capturedImageData">
+            </div>
+        </div>
+
+        <!-- Basic Details -->
+        <div class="section-title">
+            <i class="bi bi-person-fill"></i>
+            Basic Details
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label>Scholar No *</label>
+                <input type="text" name="scholar_no" class="form-control" required>
+            </div>
+
+            <div class="col-md-6">
+                <label>Student Name *</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+
+            <div class="col-md-6">
+                <label>Father's Name *</label>
+                <input type="text" name="father_name" class="form-control" required>
+            </div>
+
+            <div class="col-md-6">
+                <label>Mother's Name</label>
+                <input type="text" name="mother_name" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+                <label>Date of Birth *</label>
+                <input type="date" name="dob" class="form-control" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Gender *</label>
+                <select name="gender" class="form-select" required>
+                    <option value="Boy">Boy</option>
+                    <option value="Girl">Girl</option>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label>Class *</label>
+                <select name="class_name" class="form-select" required>
+                    <option value="">Select Class</option>
+                    {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
+                    <option value="{{ c }}">Class {{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label>Address</label>
+                <input type="text" name="address" class="form-control" placeholder="Village / Town, District">
+            </div>
+        </div>
+
+        <br>
+
+        <!-- Identity & Banking Details -->
+        <div class="section-title">
+            <i class="bi bi-credit-card-2-front-fill"></i>
+            Identity & Bank Details
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label>Samagra ID</label>
+                <input type="text" name="samagra_id" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+                <label>Aadhaar Number</label>
+                <input type="text" name="aadhaar_id" class="form-control" placeholder="12 Digit Aadhaar">
+            </div>
+
+            <div class="col-md-6">
+                <label>APAAR ID</label>
+                <input type="text" name="apaar_id" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+                <label>PEN Number</label>
+                <input type="text" name="pen_number" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+                <label>Mobile Number</label>
+                <input type="text" name="mobile_no" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+                <label>Bank Account No</label>
+                <input type="text" name="bank_account" class="form-control" placeholder="Account Number">
+            </div>
+
+            <div class="col-md-6">
+                <label>Bank IFSC Code</label>
+                <input type="text" name="ifsc_code" class="form-control" placeholder="IFSC Code">
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-save w-100">
+                <i class="bi bi-check-circle-fill"></i>
+                Save Student Registration
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+</div>
+
+<!-- Camera Modal -->
+<div class="modal fade" id="cameraModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-camera"></i> Live Camera Capture</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="stopCamera()"></button>
+      </div>
+      <div class="modal-body text-center">
+        <video id="webcam" autoplay playsinline style="width: 100%; max-height: 300px; border-radius: 10px; background: #000;"></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-outline-secondary" onclick="switchCamera()">
+            <i class="bi bi-arrow-repeat"></i> Switch Camera
+        </button>
+        <div>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="stopCamera()">Close</button>
+            <button type="button" class="btn btn-success" onclick="takeSnapshot()">
+                <i class="bi bi-camera"></i> Capture
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let video = document.getElementById('webcam');
+    let canvas = document.getElementById('canvas');
+    let currentStream = null;
+    let currentFacingMode = 'user';
+
+    function previewFile(input) {
+        if (input.files && input.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photoPreview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function startCamera() {
+        stopCamera();
+        try {
+            currentStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: currentFacingMode }
+            });
+            video.srcObject = currentStream;
+        } catch (err) {
+            alert("Camera access failed or permission denied: " + err);
+        }
+    }
+
+    function stopCamera() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    function switchCamera() {
+        currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+        startCamera();
+    }
+
+    function takeSnapshot() {
+        if (!currentStream) return;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        let ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        let dataUrl = canvas.toDataURL('image/png');
+        document.getElementById('photoPreview').src = dataUrl;
+        document.getElementById('capturedImageData').value = dataUrl;
+
+        let cameraModal = bootstrap.Modal.getInstance(document.getElementById('cameraModal'));
+        cameraModal.hide();
+        stopCamera();
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Class Promotion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .card-box { background: #ffffff; border-radius: 10px; border: 1px solid #dee2e6; }
+    </style>
+</head>
+<body class="p-3 p-md-4">
+<div class="container bg-white p-4 rounded shadow-sm">
+    
+    <!-- Top Action Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+            <i class="bi bi-arrow-left"></i> Dashboard पर वापस जाएं
+        </a>
+        <h4 class="fw-bold text-primary m-0">🎓 छात्र कक्षा संवर्धन (Bulk Class Promotion)</h4>
+    </div>
+    <hr>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Select Class Form -->
+    <form method="GET" action="{{ url_for('promote_students') }}" class="card-box p-3 mb-4 shadow-sm">
+        <div class="row align-items-end g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-secondary">वर्तमान कक्षा चुनें (Select Current Class):</label>
+                <select name="class_name" class="form-select" required>
+                    <option value="">-- कक्षा चुनें --</option>
+                    {% for c in classes %}
+                    <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>Class {{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-primary w-100 fw-bold">
+                    <i class="bi bi-search"></i> छात्रों की सूची देखें
+                </button>
+            </div>
+        </div>
+    </form>
+
+    {% if selected_class %}
+    <!-- Promotion Action Form -->
+    <form method="POST" action="{{ url_for('promote_students') }}">
+        <input type="hidden" name="current_class" value="{{ selected_class }}">
+        
+        <div class="card-box p-3 mb-3 shadow-sm bg-light">
+            <div class="row align-items-end g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold text-success">किसे प्रमोट करना है? (Promote Selected To):</label>
+                    <select name="target_class" class="form-select border-success" required>
+                        <option value="">-- अगली कक्षा चुनें --</option>
+                        {% for c in classes %}
+                        <option value="{{ c }}">Class {{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-success w-100 fw-bold shadow-sm" onclick="return confirm('क्या आप वाकई चुने हुए छात्रों को अगली कक्षा में भेजना चाहते हैं?');">
+                        <i class="bi bi-check-all"></i> चुने गए छात्रों को प्रमोट करें
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Table with Checkboxes -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th style="width: 50px;">
+                            <input type="checkbox" id="selectAll" class="form-check-input" onclick="toggleAll(this)">
+                        </th>
+                        <th>S.N.</th>
+                        <th>Scholar No</th>
+                        <th>Student Name</th>
+                        <th>Father Name</th>
+                        <th>Current Class</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in students %}
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" name="student_ids" value="{{ s.id }}" class="form-check-input student-checkbox" checked>
+                        </td>
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td class="text-center fw-semibold">{{ s.scholar_no }}</td>
+                        <td class="fw-bold">{{ s.name }}</td>
+                        <td>{{ s.father_name }}</td>
+                        <td class="text-center text-primary fw-bold">{{ s.class_name }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">इस कक्षा में कोई सक्रिय छात्र नहीं मिला।</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+    {% endif %}
+
+</div>
+
+<script>
+    function pukulAll(source) {
+        checkboxes = document.getElementsByClassName('student-checkbox');
+        for(var i=0, n=checkboxes.length;i<n;i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+    document.getElementById('selectAll')?.addEventListener('click', function(e) {
+        let checkboxes = document.querySelectorAll('.student-checkbox');
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

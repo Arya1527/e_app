@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Student</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f4f4; }
+        .form-container { background: white; padding: 20px; border-radius: 8px; max-width: 500px; margin: auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn { background: blue; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+    <script>
+        function updateFormFields() {
+            var cls = document.getElementById("class_name").value;
+            var groupDiv = document.getElementById("group_div");
+            var marksDiv = document.getElementById("marks_fields");
+            groupDiv.style.display = "none";
+            marksDiv.innerHTML = "";
+
+            if (["Nursery", "LKG", "UKG"].includes(cls)) {
+                createFields(['English', 'Hindi', 'Maths', 'Drawing'], 'project');
+            } else if (["1st", "2nd", "3rd", "4th", "5th"].includes(cls)) {
+                createFields(['Hindi', 'English', 'Maths', 'Environment'], 'project');
+            } else if (["6th", "7th", "8th", "9th", "10th"].includes(cls)) {
+                createFields(['Hindi', 'English', 'Maths', 'Science', 'Social_Science', 'Sanskrit'], 'project');
+            } else if (["11th", "12th"].includes(cls)) {
+                groupDiv.style.display = "block";
+                updateHighSchoolFields();
+            }
+        }
+
+        function updateHighSchoolFields() {
+            var group = document.getElementById("group_name").value;
+            var marksDiv = document.getElementById("marks_fields");
+            marksDiv.innerHTML = "";
+
+            if (!group) return;
+
+            createFields(['Hindi', 'English'], 'project');
+
+            if (group === "Science") {
+                createFields(['Physics', 'Chemistry', 'Biology'], 'practical');
+            } else if (group === "Maths") {
+                createFields(['Physics', 'Chemistry'], 'practical');
+                createFields(['Maths'], 'project');
+            } else if (group === "Commerce") {
+                createFields(['Accountancy', 'Business_Studies'], 'project');
+
+                var optHtml = `<div class="form-group">
+                    <label>Select 5th Subject:</label>
+                    <select id="commerce_opt" name="commerce_opt" onchange="updateCommerceOptional()">
+                        <option value="Economics">Economics (Theory 80 / Project 20)</option>
+                        <option value="Maths">Maths (Theory 80 / Project 20)</option>
+                        <option value="Informatics_Practices">Informatics Practices (Theory 70 / Practical 30)</option>
+                    </select>
+                </div><div id="commerce_opt_fields"></div>`;
+                marksDiv.innerHTML += optHtml;
+                updateCommerceOptional();
+            } else if (group === "Arts") {
+                createFields(['History', 'Political_Science', 'Geography'], 'project');
+            }
+        }
+
+        function updateCommerceOptional() {
+            var opt = document.getElementById("commerce_opt").value;
+            var optDiv = document.getElementById("commerce_opt_fields");
+            optDiv.innerHTML = `<h4>${opt.replace('_',' ')}</h4>
+                <div class="form-group">
+                    <label>Theory Marks:</label>
+                    <input type="number" step="0.1" name="${opt}_theory" required>
+                </div>
+                <div class="form-group">
+                    <label>${opt === 'Informatics_Practices' ? 'Practical' : 'Project'} Marks:</label>
+                    <input type="number" step="0.1" name="${opt}_${opt === 'Informatics_Practices' ? 'practical' : 'project'}" required>
+                </div>`;
+        }
+
+        function createFields(subjects, type) {
+            var marksDiv = document.getElementById("marks_fields");
+            subjects.forEach(function(sub) {
+                var html = `<h4>${sub.replace('_',' ')}</h4>
+                    <div class="form-group">
+                        <label>Theory Marks:</label>
+                        <input type="number" step="0.1" name="${sub}_theory" required>
+                    </div>
+                    <div class="form-group">
+                        <label>${type === 'project' ? 'Project' : 'Practical'} Marks:</label>
+                        <input type="number" step="0.1" name="${sub}_${type}" required>
+                    </div>`;
+                marksDiv.innerHTML += html;
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="form-container">
+        <h3>Add New Student Score</h3>
+        <form method="POST">
+            <div class="form-group"> <label>Student Name</label> <input type="text" name="name" required> </div>
+            <div class="form-group"> <label>Roll Number</label> <input type="text" name="roll_no" required> </div>
+            <div class="form-group">
+                <label>Class</label>
+                <select id="class_name" name="class_name" onchange="updateFormFields()" required>
+                    <option value="">--Select Class--</option>
+                    <option value="Nursery">Nursery</option>
+                    <option value="LKG">LKG</option>
+                    <option value="UKG">UKG</option>
+                    <option value="1st">1st</option>
+                    <option value="2nd">2nd</option>
+                    <option value="3rd">3rd</option>
+                    <option value="4th">4th</option>
+                    <option value="5th">5th</option>
+                    <option value="6th">6th</option>
+                    <option value="7th">7th</option>
+                    <option value="8th">8th</option>
+                    <option value="9th">9th</option>
+                    <option value="10th">10th</option>
+                    <option value="11th">11th</option>
+                    <option value="12th">12th</option>
+                </select>
+            </div>
+            <div class="form-group" id="group_div" style="display:none;">
+                <label>Stream / Group</label>
+                <select id="group_name" name="group_name" onchange="updateHighSchoolFields()">
+                    <option value="">--Select Group--</option>
+                    <option value="Science">Science Group</option>
+                    <option value="Maths">Maths Group</option>
+                    <option value="Commerce">Commerce Group</option>
+                    <option value="Arts">Arts Group</option>
+                </select>
+            </div>
+            <div id="marks_fields"></div>
+            <button type="submit" class="btn">Save Student Record</button>
+            <a href="/" style="margin-left: 10px;">Back</a>
+        </form>
+    </div>
+</body>
+</html>

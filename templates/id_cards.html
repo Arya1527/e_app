@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student ID Cards</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 20px; }
+        .filter-box { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .grid-container { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-start; }
+
+        .id-card {
+            width: 86mm;
+            height: 54mm;
+            border: 2px solid #1a365d;
+            border-radius: 8px;
+            background: #ffffff;
+            box-sizing: border-box;
+            padding: 4px 6px;
+            position: relative;
+            page-break-inside: avoid;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .header-bg {
+            background: #1a365d;
+            color: white;
+            text-align: center;
+            padding: 3px 2px;
+            border-radius: 4px;
+        }
+        .school-name {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .card-title {
+            font-size: 7.5px;
+            color: #e2e8f0;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-top: 1px;
+            text-transform: uppercase;
+        }
+
+        .card-body {
+            display: flex;
+            margin-top: 5px;
+            gap: 6px;
+        }
+        .photo-area {
+            width: 28%;
+            text-align: center;
+        }
+        .photo-area img {
+            width: 50px;
+            height: 58px;
+            border: 1px solid #718096;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+        .sch-text {
+            font-size: 7.5px;
+            font-weight: bold;
+            margin-top: 2px;
+            color: #1a365d;
+        }
+
+        .details-area {
+            width: 72%;
+            font-size: 8.5px;
+            line-height: 1.3;
+            color: #2d3748;
+        }
+        .details-area strong {
+            color: #1a365d;
+            display: inline-block;
+            width: 52px;
+        }
+        .address-line {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; margin: 0; padding: 0; }
+            .grid-container { display: block; }
+            .id-card { float: left; margin: 4px; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="filter-box no-print">
+        <form method="GET" action="{{ url_for('id_card_generator') }}">
+            <label><strong>Select Class:</strong></label>
+            <select name="class_name">
+                <option value="">-- All Classes --</option>
+                {% for c in classes %}
+                <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+
+            <label style="margin-left: 15px;"><strong>Scholar No / Name:</strong></label>
+            <input type="text" name="scholar_no" value="{{ scholar_no }}" placeholder="Search Student">
+
+            <button type="submit" style="padding: 5px 12px; cursor: pointer;">Search</button>
+            <button type="button" onclick="window.print()" style="padding: 5px 15px; background: #2b6cb0; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">🖨️ Bulk Print ID Cards</button>
+        </form>
+    </div>
+
+    <div class="grid-container">
+        {% for s in students %}
+        <div class="id-card">
+            <div class="header-bg">
+                <div class="school-name">JYOTI NIKETAN SCHOOL</div>
+                <div class="card-title">STUDENT IDENTITY CARD</div>
+            </div>
+
+            <div class="card-body">
+                <div class="photo-area">
+                    <img src="{{ '/' + s['photo_path'] if s['photo_path'] else '/static/default.png' }}" alt="Photo">
+                    <div class="sch-text">Sch: {{ s['scholar_no'] }}</div>
+                </div>
+
+                <div class="details-area">
+                    <div><strong>Name:</strong> {{ s['name'] }}</div>
+                    <div><strong>Class:</strong> {{ s['class_name'] }}</div>
+                    <div><strong>Father:</strong> {{ s['father_name'] }}</div>
+                    <div><strong>Mother:</strong> {{ s['mother_name'] or 'N/A' }}</div>
+                    <div><strong>DOB:</strong> {{ s['dob'] }}</div>
+                    <div><strong>Mobile:</strong> {{ s['mobile_no'] or 'N/A' }}</div>
+                    <div class="address-line"><strong>Address:</strong> {{ s['address'] if 'address' in s.keys() and s['address'] else 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p class="no-print">No student record found. Please select a class or search by scholar number.</p>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

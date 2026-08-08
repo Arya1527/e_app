@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Management Panel</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { margin-bottom: 10px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #2b6cb0; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
+        th { background: #1a365d; color: white; }
+        .teacher-img { width: 45px; height: 50px; border-radius: 4px; object-fit: cover; }
+        .btn-danger { background: #e53e3e; color: white; padding: 4px 8px; text-decoration: none; border-radius: 4px; font-size: 12px; }
+        .alert { padding: 10px; background: #d4edda; color: #155724; border-radius: 4px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>👨‍🏫 Teacher Management Panel</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <h3>शिक्षकों का नया रिकॉर्ड जोड़ें</h3>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>शिक्षक का नाम (Teacher Name):</label>
+                <input type="text" name="teacher_name" required>
+            </div>
+            <div class="form-group">
+                <label>मोबाइल नंबर (Mobile No):</label>
+                <input type="text" name="mobile_no" required>
+            </div>
+            <div class="form-group">
+                <label>ईमेल (Email):</label>
+                <input type="email" name="email" placeholder="teacher@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>आधार नंबर (Aadhaar No):</label>
+                <input type="text" name="aadhaar_no">
+            </div>
+            <div class="form-group">
+                <label>विषय / पद (Subject / Designation):</label>
+                <input type="text" name="subject_designation" placeholder="उदा: Maths Teacher / Science">
+            </div>
+            <div class="form-group">
+                <label>शिक्षक की फोटो (Photo):</label>
+                <input type="file" name="teacher_photo" accept="image/*">
+            </div>
+        </div>
+        <button type="submit" style="margin-top: 10px;">➕ Save Teacher Record</button>
+    </form>
+
+    <hr style="margin-top: 30px;">
+
+    <h3>सभी शिक्षकों की सूची</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>फोटो</th>
+                <th>नाम</th>
+                <th>मोबाइल</th>
+                <th>ईमेल</th>
+                <th>आधार नं</th>
+                <th>विषय / पद</th>
+                <th>एक्शन</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in teachers %}
+            <tr>
+                <td>
+                    <img src="{{ '/' + t['photo_path'] if t['photo_path'] else '/static/default.png' }}" class="teacher-img">
+                </td>
+                <td><strong>{{ t['teacher_name'] }}</strong></td>
+                <td>{{ t['mobile_no'] }}</td>
+                <td>{{ t['email'] or 'N/A' }}</td>
+                <td>{{ t['aadhaar_no'] or 'N/A' }}</td>
+                <td>{{ t['subject_designation'] or 'N/A' }}</td>
+                <td>
+                    <a href="{{ url_for('delete_teacher', id=t['id']) }}" class="btn-danger" onclick="return confirm('क्या आप इस रिकॉर्ड को हटाना चाहते हैं?')">🗑️ Delete</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center;">कोई शिक्षक रिकॉर्ड दर्ज नहीं है।</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulk Score Cards Print</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .page-break { 
+            page-break-after: always; 
+            padding-top: 20px; 
+        }
+        .card-container { 
+            max-width: 800px; 
+            margin: auto; 
+            background: white; 
+            padding: 30px; 
+            border: 3px double #000; 
+        }
+        @media print { 
+            .no-print { display: none !important; }
+            .page-break { 
+                page-break-after: always; 
+                page-break-inside: avoid; 
+            }
+            body { 
+                background: white; 
+                padding: 0; 
+            }
+        }
+    </style>
+</head>
+<body class="bg-light p-3">
+
+<div class="text-center mb-3 no-print">
+    <button onclick="window.print()" class="btn btn-primary btn-lg fw-bold">🖨️ Print All Bulk Scorecards Now</button>
+</div>
+
+{% for student in students %}
+<div class="card-container page-break">
+    <div class="text-center fw-bold fs-4">JYOTI NIKETAN H.S SCHOOL</div>
+    
+    <!-- Dynamic Exam Name (First Terminal / Second Terminal / Annual) -->
+
+<div class="text-center text-muted fw-bold mb-3 text-uppercase">
+    {% if exam_type %}
+        {% if 'EXAM' in exam_type.upper() or 'REPORT' in exam_type.upper() %}
+            {{ exam_type }}
+        {% else %}
+            {{ exam_type }} TERMINAL EXAM
+        {% endif %}
+    {% else %}
+        PROGRESS REPORT SHEET
+    {% endif %}
+</div>
+
+      <hr style="border-top: 2px solid #000;">
+
+    <table class="table table-borderless mb-2">
+        <tr>
+            <td><strong>Student Name:</strong> {{ student.name }}</td>
+            <td><strong>Scholar No:</strong> {{ student.scholar_no }}</td>
+        </tr>
+        <tr>
+            <td><strong>Father's Name:</strong> {{ student.father_name }}</td>
+            <td><strong>Roll No:</strong> {{ student.roll_no }}</td>
+        </tr>
+        <tr>
+            <td>
+                <strong>Class:</strong> {{ student.class_name }} 
+                {% if student.group_name and student.class_name in ['11th', '12th'] %}
+                    ({{ student.group_name }})
+                {% endif %}
+            </td>
+            <td><strong>DOB:</strong> {{ student.dob or 'N/A' }}</td>
+        </tr>
+    </table>
+
+    <table class="table table-bordered text-center align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Subject</th>
+                <th>Theory Marks</th>
+                <th>Project/Practical</th>
+                <th>Total Marks</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub, marks in student.scores.items() %}
+            <tr>
+                <td class="text-start"><strong>{{ sub.replace('_', ' ') }}</strong></td>
+                <td>{{ marks.theory }}</td>
+                <td>{{ marks.project if marks.project is defined else (marks.practical if marks.practical is defined else 0) }}</td>
+                <td><strong>{{ marks.total }}</strong></td>
+                <td>
+                    {% if marks.status == 'Pass' %}
+                    <span class="text-success fw-bold">PASS</span>
+                    {% else %}
+                    <span class="text-danger fw-bold">FAIL</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="table-secondary">
+                <td colspan="3" class="text-end"><strong>Grand Total & Percentage:</strong></td>
+                <td><strong>{{ student.total_obtained }} / {{ student.total_max }}</strong></td>
+                <td><strong>{{ student.percentage }}%</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="d-flex justify-content-between mt-5 pt-4 text-center">
+        <div>
+            <div style="border-top:1px solid #000; width:180px;">{{ student.teacher_name or 'Class Teacher' }}</div>
+            <small>(Class Teacher Signature)</small>
+        </div>
+        <div>
+            <div style="border-top:1px solid #000; width:180px;">{{ principal_name or 'R.S Dwivedi' }}</div>
+            <small>(Principal Signature)</small>
+        </div>
+    </div>
+</div>
+{% else %}
+<h3 class="text-center text-muted my-5">No Score Cards Found For Bulk Printing.</h3>
+{% endfor %}
+
+</body>
+</html>

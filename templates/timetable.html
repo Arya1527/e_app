@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Exam Timetable & Schedule</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print { .no-print { display: none !important; } }
+        .timetable-card { border: 2px solid #000; padding: 20px; background: #fff; margin-top: 20px; }
+    </style>
+</head>
+<body class="bg-light p-4">
+
+<div class="container no-print mb-4">
+    <a href="/" class="btn btn-secondary mb-3">← Dashboard</a>
+    <div class="card p-3 shadow-sm">
+        <h4>🗓️ Examination Timetable Setup</h4>
+        <form method="GET" class="row g-2 align-items-center mb-3">
+            <div class="col-auto">
+                <label class="fw-bold">कक्षा चुनें:</label>
+            </div>
+            <div class="col-auto">
+                <select name="class_name" class="form-select" onchange="this.form.submit()">
+                    {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
+                    <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>Class {{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
+        <!-- टाइमटेबल सेट करने का फॉर्म -->
+        <form method="POST">
+            <input type="hidden" name="class_name" value="{{ selected_class }}">
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Paper No.</th>
+                        <th>Exam Date</th>
+                        <th>Subject Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(1, 7) %}
+                    {% set sch = schedules[i-1] if schedules|length >= i else None %}
+                    <tr>
+                        <td class="fw-bold text-center">{{ i }}</td>
+                        <td><input type="date" name="date_{{ i }}" class="form-control" value="{{ sch.exam_date if sch else '' }}"></td>
+                        <td><input type="text" name="subject_{{ i }}" class="form-control" placeholder="e.g. Hindi / Maths" value="{{ sch.subject_name if sch else '' }}"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-success fw-bold">💾 Save Timetable</button>
+            <button type="button" onclick="window.print()" class="btn btn-primary float-end">🖨️ Print Timetable Sheet</button>
+        </form>
+    </div>
+</div>
+
+<!-- प्रिंट होने वाला टाइमटेबल (Print Distribution Sheet) -->
+<div class="container">
+    <div class="timetable-card">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">JYOTI NIKETAN H.S SCHOOL</h2>
+            <h4>EXAMINATION TIME TABLE - CLASS {{ selected_class }}</h4>
+        </div>
+        <table class="table table-bordered text-center align-middle">
+            <thead class="table-secondary">
+                <tr>
+                    <th>Paper</th>
+                    <th>Date</th>
+                    <th>Subject</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if schedules %}
+                    {% for s in schedules %}
+                    <tr>
+                        <td>Paper {{ s.paper_no if s.paper_no else loop.index }}</td>
+                        <td>{{ s.exam_date if s.exam_date else s.date }}</td>
+                        <td class="fw-bold">{{ s.subject_name if s.subject_name else s.subject }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3">कोई टाइमटेबल सेट नहीं है। ऊपर फॉर्म भरकर सेव करें।</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        <div class="d-flex justify-content-between mt-5 pt-3">
+            <div>Exam In-charge Signature</div>
+            <div>Principal Signature</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

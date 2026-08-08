@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Control & Attendance Sheet</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eef2f5; margin: 15px; }
+        .card { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; text-decoration: none; display: inline-block; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
+        th, td { border: 1px solid #000; padding: 6px; text-align: center; }
+        th { background: #f0f0f0; }
+        @media print {
+            body { background: white; margin: 0; }
+            .no-print { display: none !important; }
+            .card { box-shadow: none; padding: 0; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="no-print">
+            <a href="/register" class="btn" style="background:#6c757d;">← Admission Master</a>
+            <button onclick="window.print()" class="btn" style="background:#007bff; float:right;">🖨️ Print Attendance Sheet</button>
+            <h2>Exam Control Sheet (Attendance Sheet)</h2>
+
+            <form method="GET" style="display:flex; gap:15px; align-items:center; background:#f8f9fa; padding:10px; border-radius:5px;">
+                <div>
+                    <label><b>Class 1:</b></label>
+                    <select name="class1" style="padding:5px;">
+                        {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
+                        <option value="{{ c }}" {% if c1==c %}selected{% endif %}>Class {{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label><b>Merge Class 2 (Optional Seating):</b></label>
+                    <select name="class2" style="padding:5px;">
+                        <option value="">None</option>
+                        {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
+                        <option value="{{ c }}" {% if c2==c %}selected{% endif %}>Class {{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn" style="background:#28a745;">Generate Sheet</button>
+            </form>
+        </div>
+
+        <!-- Printable Exam Attendance Sheet -->
+        <div style="margin-top:20px;">
+            <div style="text-align:center;">
+                <h2 style="margin:0;">JYOTI NIKETAN H.S SCHOOL</h2>
+                <h4 style="margin:5px 0;">EXAM ATTENDANCE & CONTROL SHEET (2026)</h4>
+                <p style="margin:3px 0;"><b>Class:</b> {{ c1 }} {% if c2 %} & {{ c2 }} (Merged){% endif %}</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">S.N</th>
+                        <th rowspan="2">Roll No</th>
+                        <th rowspan="2">Scholar No</th>
+                        <th rowspan="2">Student Name</th>
+                        <th rowspan="2">Class</th>
+                        {% for t in timetable %}
+                        <th>Paper {{ t.paper_no }}<br><small>{{ t.exam_date }}</small><br><b>{{ t.subject_name }}</b></th>
+                        {% else %}
+                        <th colspan="6">Papers (P / A)</th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        {% if timetable %}
+                            {% for t in timetable %}<th>Sign / Status</th>{% endfor %}
+                        {% else %}
+                            <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th><th>P6</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in students %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><b>{{ s.roll_no or 'N/A' }}</b></td>
+                        <td>{{ s.scholar_no }}</td>
+                        <td style="text-align:left;"><b>{{ s.name }}</b></td>
+                        <td>{{ s.class_name }}</td>
+                        {% if timetable %}
+                            {% for t in timetable %}<td></td>{% endfor %}
+                        {% else %}
+                            <td></td><td></td><td></td><td></td><td></td><td></td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div style="display:flex; justify-content:space-between; margin-top:40px; font-size:12px;">
+                <div>Invigilator Signature: ______________</div>
+                <div>Center Supdt Signature: ______________</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Send Mobile Message</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .alert { padding: 10px; background: #fff3cd; color: #856404; border-radius: 4px; margin-bottom: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
+        th { background: #1a365d; color: white; }
+        .btn-wa { background: #25D366; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .btn-sms { background: #007bff; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📱 कक्षा अनुसार मोबाइल संदेश भेजें</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <div class="form-group">
+            <label>कक्षा (Class) चुनें:</label>
+            <select name="class_name" required>
+                <option value="">-- क्लास चुनें --</option>
+                {% for c in classes %}
+                <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>संदेश (Message):</label>
+            <textarea name="message" rows="4" placeholder="छात्रों या अभिभावकों के लिए संदेश यहाँ लिखें..." required>{{ message_text }}</textarea>
+        </div>
+
+        <button type="submit">📲 मोबाइल नंबर खोजें व मैसेज तैयार करें</button>
+    </form>
+
+    {% if students %}
+    <hr style="margin-top: 25px;">
+    <h3>कक्षा {{ selected_class }} के छात्र (कुल: {{ students|length }})</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>छात्र का नाम</th>
+                <th>मोबाइल नंबर</th>
+                <th>मैसेज भेजें</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in students %}
+            <tr>
+                <td><strong>{{ s['name'] }}</strong></td>
+                <td>{{ s['mobile_no'] }}</td>
+                <td>
+                    <!-- WhatsApp Direct Link -->
+                    <a href="https://wa.me/91{{ s['mobile_no'] }}?text={{ message_text | urlencode }}" target="_blank" class="btn-wa">💬 WhatsApp</a>
+                    <!-- Direct SMS Link -->
+                    <a href="sms:{{ s['mobile_no'] }}?body={{ message_text | urlencode }}" class="btn-sms">✉️ SMS</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+
+</body>
+</html>

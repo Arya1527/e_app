@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>लॉगिन - स्कूल प्रबंधन पोर्टल</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        /* Animated Gradient Background */
+        body {
+            background: linear-gradient(-45deg, #0d6efd, #6610f2, #6f42c1, #0dcaf0);
+            background-size: 400% 400%;
+            animation: gradientAnimation 12s ease infinite;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Modern Glassmorphic Login Card */
+        .login-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            max-width: 420px;
+            width: 100%;
+            padding: 2.5rem 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        /* School Portal Logo / Icon Badge */
+        .brand-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #0d6efd, #6610f2);
+            color: #ffffff;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+        }
+
+        /* Custom Input Field Styling */
+        .input-group-custom {
+            position: relative;
+        }
+
+        .input-group-custom i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            z-index: 10;
+            font-size: 1.1rem;
+        }
+
+        .form-control-custom {
+            padding-left: 45px !important;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-radius: 12px;
+            border: 1.5px solid #dee2e6;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control-custom:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+
+        /* Custom Vibrant Submit Button */
+        .btn-gradient {
+            background: linear-gradient(135deg, #0d6efd, #6610f2);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            padding: 0.8rem;
+            border-radius: 12px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 18px rgba(13, 110, 253, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #0b5ed7, #520dc2);
+            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.45);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        /* Links and Helpers */
+        .read-only-link {
+            color: #6c757d;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .read-only-link:hover {
+            color: #0d6efd;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <!-- School Icon Header -->
+        <div class="text-center mb-4">
+            <div class="brand-icon mb-3">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">स्कूल प्रबंधन पोर्टल</h3>
+            <p class="text-muted small mb-0">मोबाइल नंबर या ईमेल से OTP वेरीफाई करें</p>
+        </div>
+
+        <!-- Flash Messages Block -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-custom alert-dismissible fade show p-2 mb-3" role="alert">
+                <i class="bi bi-info-circle-fill me-1"></i> {{ message }}
+                <button type="button" class="btn-close p-2" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- OTP Form -->
+        <form action="{{ url_for('send_otp') }}" method="POST">
+            <div class="mb-4">
+                <label class="form-label text-secondary fw-semibold small">मोबाइल नंबर / ईमेल आईडी</label>
+                <div class="input-group-custom">
+                    <i class="bi bi-person-bounding-box"></i>
+                    <input type="text" name="identity" class="form-control form-control-custom" placeholder="उदा. 9876543210 या admin@school.com" required autocomplete="off">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-gradient w-100 mb-3">
+                <i class="bi bi-shield-lock-fill me-1"></i> OTP भेजें
+            </button>
+        </form>
+
+        <!-- Read-Only Link -->
+        <div class="text-center mt-3 pt-2 border-top">
+            <a href="{{ url_for('index') }}" class="read-only-link text-decoration-none small">
+                <i class="bi bi-eye-fill me-1"></i> केवल देखें (Read-Only Mode)
+            </a>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS (Flashing alert dismiss karne ke liye आवश्यक) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.js"></script>
+</body>
+</html>

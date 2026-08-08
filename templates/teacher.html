@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Marks Entry Panel</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
+        .form-section-title { color: #2c3e50; font-weight: 700; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 20px; }
+        .subject-card { transition: all 0.2s ease; background: #ffffff; border: 1px solid #e2e8f0; }
+        .subject-card:hover { border-color: #0d6efd; box-shadow: 0 4px 12px rgba(13, 110, 253, 0.08); }
+        .is-invalid-custom { border-color: #dc3545 !important; background-color: #fff8f8 !important; }
+        .status-badge { font-size: 0.8rem; padding: 0.35em 0.65em; }
+    </style>
+</head>
+<body class="py-4">
+
+<div class="container" style="max-width: 920px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+        </a>
+        <span class="badge bg-primary fs-6 fw-normal rounded-pill px-3">Academic Session 2026</span>
+    </div>
+
+    <div class="card card-custom p-4 bg-white">
+        <h3 class="form-section-title d-flex align-items-center gap-2">
+            <i class="fa-solid fa-pen-to-square text-primary"></i>
+            Teacher Marks Entry Panel
+        </h3>
+
+        <form method="POST" id="marksForm" novalidate>
+            <div class="card bg-light border-0 p-3 mb-4 rounded-3">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-secondary">Search Scholar No / Roll No</label>
+                        <div class="input-group">
+                            <input type="text" id="search_query" class="form-control" placeholder="Type Scholar No & Search...">
+                            <button type="button" class="btn btn-primary px-3 fw-medium" onclick="fetchStudent()">
+                                <i class="fa-solid fa-magnifying-glass me-1"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label class="form-label fw-semibold text-secondary">Scholar ID</label>
+                        <input type="text" id="scholar_no" name="scholar_no" class="form-control bg-warning bg-opacity-10 fw-bold border-warning" readonly required>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label class="form-label fw-semibold text-secondary">Roll No <span class="text-danger">*</span></label>
+                        <input type="text" id="roll_no" name="roll_no" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Student Name <span class="text-danger">*</span></label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Father's Name</label>
+                    <input type="text" id="father_name" name="father_name" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">DOB</label>
+                    <input type="date" id="dob" name="dob" class="form-control">
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Class <span class="text-danger">*</span></label>
+                    <select name="class_name" id="class_select" class="form-select" required onchange="renderSubjects()">
+                        <option value="">Select Class</option>
+                        {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
+                        <option value="{{ c }}">{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4" id="group_box" style="display:none;">
+                    <label class="form-label fw-medium">Stream / Group</label>
+                    <select name="group_name" id="group_select" class="form-select" onchange="renderSubjects()">
+                        <option value="Commerce">Commerce</option>
+                        <option value="Science">Science (Bio)</option>
+                        <option value="Maths">Science (Maths)</option>
+                        <option value="Arts">Arts</option>
+                    </select>
+                </div>
+                <div class="col-md-4" id="optional_sub_box" style="display:none;">
+                    <label class="form-label fw-medium">Optional Subject Choice</label>
+                    <select name="optional_subject" id="optional_select" class="form-select" onchange="renderSubjects()">
+                        <option value="Informatics_Practices">Informatics Practices</option>
+                        <option value="Economics">Economics</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Teacher Name</label>
+                    <input type="text" name="teacher_name" class="form-control" placeholder="Enter evaluator name">
+                </div>
+            </div>
+
+            <h5 class="form-section-title d-flex align-items-center justify-content-between">
+                <span><i class="fa-solid fa-list-check me-2 text-primary"></i>Subject Marks Input</span>
+            </h5>
+
+            <div id="subjects_container" class="row g-3"></div>
+
+            <button type="submit" id="submitBtn" class="btn btn-success btn-lg w-100 mt-4 shadow-sm fw-bold">
+                <i class="fa-solid fa-floppy-disk me-2"></i>Save & Submit Marks
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function fetchStudent() {
+    let q = document.getElementById('search_query').value.trim();
+    if(!q) { alert("Please enter Scholar No or Roll No"); return; }
+
+    fetch(`/get_student_info?query=${q}`)
+    .then(r => r.json())
+    .then(data => {
+        if(data.success) {
+            document.getElementById('scholar_no').value = data.scholar_no;
+            document.getElementById('roll_no').value = data.roll_no;
+            document.getElementById('name').value = data.name;
+            document.getElementById('father_name').value = data.father_name;
+            document.getElementById('dob').value = data.dob;
+            document.getElementById('class_select').value = data.class_name;
+            if(data.group_name) document.getElementById('group_select').value = data.group_name;
+            if(data.optional_subject) document.getElementById('optional_select').value = data.optional_subject;
+            renderSubjects();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(() => alert("Error fetching student details."));
+}
+
+function getSubjectLimits(className, subjectName) {
+    if (['Nursery', 'LKG', 'UKG'].includes(className)) {
+        return { theory: 40, project: 10 };
+    }
+    if (['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'].includes(className)) {
+        return { theory: 60, project: 40 };
+    }
+    if (['9th', '10th'].includes(className)) {
+        return { theory: 75, project: 25 };
+    }
+    if (['11th', '12th'].includes(className)) {
+        if (['Physics', 'Chemistry', 'Biology', 'Informatics_Practices'].includes(subjectName)) {
+            return { theory: 70, project: 30 };
+        }
+        return { theory: 80, project: 20 };
+    }
+    return { theory: 80, project: 20 };
+}
+
+function renderSubjects() {
+    let cls = document.getElementById('class_select').value;
+    let grp = document.getElementById('group_select').value;
+    let opt = document.getElementById('optional_select').value;
+    let container = document.getElementById('subjects_container');
+    let group_box = document.getElementById('group_box');
+    let optional_sub_box = document.getElementById('optional_sub_box');
+
+    let isSeniorClass = (cls === '11th' || cls === '12th');
+    group_box.style.display = isSeniorClass ? 'block' : 'none';
+    optional_sub_box.style.display = (isSeniorClass && grp === 'Commerce') ? 'block' : 'none';
+
+    container.innerHTML = '';
+    if(!cls) return;
+
+    let subjects = [];
+
+    if(['Nursery', 'LKG', 'UKG'].includes(cls)) {
+        subjects = ['Hindi', 'English', 'Maths', 'General_Skills'];
+    } else if(['1st','2nd','3rd','4th','5th'].includes(cls)) {
+        subjects = ['Hindi', 'English', 'Maths', 'Environment'];
+    } else if(['6th','7th','8th','9th','10th'].includes(cls)) {
+        subjects = ['Hindi', 'English', 'Maths', 'Science', 'Social_Science', 'Sanskrit'];
+    } else if(isSeniorClass) {
+        subjects = ['Hindi', 'English'];
+        if(grp === 'Commerce') {
+            subjects.push('Accountancy', 'Business_Studies', opt);
+        } else if(grp === 'Science') {
+            subjects.push('Physics', 'Chemistry', 'Biology');
+        } else if(grp === 'Maths') {
+            subjects.push('Physics', 'Chemistry', 'Maths');
+        } else if(grp === 'Arts') {
+            subjects.push('History', 'Political_Science', 'Geography', 'Sociology');
+        }
+    }
+
+    subjects.forEach(sub => {
+        let limits = getSubjectLimits(cls, sub);
+        let div = document.createElement('div');
+        div.className = 'col-md-6';
+        div.innerHTML = `
+            <div class="card subject-card p-3 rounded-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-dark">${sub.replace('_', ' ')}</span>
+                    <span class="badge bg-secondary rounded-pill status-badge" id="status_${sub}">Not Evaluated</span>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label small text-muted mb-1">Theory Marks</label>
+                        <input type="number" step="0.1" name="${sub}_theory" min="0" max="${limits.theory}"
+                               class="form-control marks-input" placeholder="Theory" required oninput="validateInput(this, '${sub}')">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-muted mb-1">Project/Prac Marks</label>
+                        <input type="number" step="0.1" name="${sub}_project" min="0" max="${limits.project}"
+                               class="form-control marks-input" placeholder="Project/Prac" required oninput="validateInput(this, '${sub}')">
+                    </div>
+                </div>
+                <div class="form-text text-danger small d-none mt-1" id="err_${sub}"></div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function validateInput(input, subjectName) {
+    let max = parseFloat(input.getAttribute('max'));
+    let val = parseFloat(input.value);
+    let errDiv = document.getElementById(`err_${subjectName}`);
+
+    if (val > max) {
+        input.classList.add('is-invalid-custom');
+        errDiv.classList.remove('d-none');
+        errDiv.innerText = `⚠️ अधिकतम अंक सीमा (${max}) से अधिक हैं!`;
+    } else if (val < 0) {
+        input.classList.add('is-invalid-custom');
+        errDiv.classList.remove('d-none');
+        errDiv.innerText = `⚠️ अंक शून्य से कम नहीं हो सकते!`;
+    } else {
+        input.classList.remove('is-invalid-custom');
+        errDiv.classList.add('d-none');
+    }
+
+    checkOverallStatus(subjectName);
+    checkFormValidity();
+}
+
+function checkOverallStatus(subjectName) {
+    let thInput = document.querySelector(`input[name="${subjectName}_theory"]`);
+    let prInput = document.querySelector(`input[name="${subjectName}_project"]`);
+    let badge = document.getElementById(`status_${subjectName}`);
+
+    if(!thInput || !prInput) return;
+
+    let th = parseFloat(thInput.value) || 0;
+    let pr = parseFloat(prInput.value) || 0;
+    let thMax = parseFloat(thInput.getAttribute('max')) || 100;
+    let prMax = parseFloat(prInput.getAttribute('max')) || 100;
+
+    let totalObtained = th + pr;
+    let totalMax = thMax + prMax;
+    let percentage = (totalObtained / totalMax) * 100;
+
+    if (thInput.value !== "" && prInput.value !== "") {
+        if (thInput.classList.contains('is-invalid-custom') || prInput.classList.contains('is-invalid-custom')) {
+            badge.className = "badge bg-danger rounded-pill status-badge";
+            badge.innerText = "Limit Exceeded";
+        } else if (percentage < 33) {
+            badge.className = "badge bg-danger rounded-pill status-badge";
+            badge.innerText = `FAIL (${totalObtained}/${totalMax})`;
+        } else {
+            badge.className = "badge bg-success rounded-pill status-badge";
+            badge.innerText = `PASS (${totalObtained}/${totalMax})`;
+        }
+    }
+}
+
+function checkFormValidity() {
+    let hasError = false;
+    document.querySelectorAll('.marks-input').forEach(input => {
+        let max = parseFloat(input.getAttribute('max'));
+        let val = parseFloat(input.value);
+        if (val > max || val < 0) {
+            hasError = true;
+        }
+    });
+
+    let submitBtn = document.getElementById('submitBtn');
+    if (hasError) {
+        submitBtn.disabled = true;
+        submitBtn.classList.replace('btn-success', 'btn-secondary');
+    } else {
+        submitBtn.disabled = false;
+        submitBtn.classList.replace('btn-secondary', 'btn-success');
+    }
+}
+
+document.getElementById('marksForm').addEventListener('submit', function (e) {
+    let invalidInputs = document.querySelectorAll('.is-invalid-custom');
+    if (invalidInputs.length > 0) {
+        e.preventDefault();
+        alert("⚠️ कृपया लाल रंग में दिखाई दे रही अंकों की गलतियों को सुधारें!");
+    }
+});
+</script>
+
+</body>
+</html>

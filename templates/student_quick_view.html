@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Data Extractor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .filter-card { background: #ffffff; border-radius: 10px; border: 1px solid #dee2e6; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; margin: 0; }
+            .card { border: none !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="p-2 p-md-4">
+<div class="container-fluid bg-white p-4 rounded shadow-sm">
+    <!-- Top Action Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+            <i class="bi bi-arrow-left"></i> Dashboard
+        </a>
+        <button onclick="window.print()" class="btn btn-dark btn-sm rounded-pill px-3">
+            <i class="bi bi-printer"></i> Print Extracted List
+        </button>
+    </div>
+
+    <!-- Title -->
+    <div class="text-center mb-4 border-bottom pb-2">
+        <h3 class="fw-bold text-primary m-0">{{ config_data.school_name }}</h3>
+        <p class="text-muted m-0">Dynamic Student Data Extractor & Custom Master List</p>
+    </div>
+
+    <!-- Search & Field Selector Form -->
+    <form method="GET" action="{{ url_for('student_quick_view') }}" class="filter-card p-3 mb-4 no-print shadow-sm">
+
+        <!-- Class & Search Filter -->
+        <div class="row g-2 mb-3">
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-secondary mb-1">Class Filter:</label>
+                <select name="class_name" class="form-select form-select-sm">
+                    <option value="">-- सभी कक्षाएं (All Classes) --</option>
+                    {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
+                    <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>Class {{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label fw-bold text-secondary mb-1">Search Student:</label>
+                <input type="text" name="search" value="{{ request.args.get('search','') }}" class="form-control form-control-sm" placeholder="Search Name / Scholar / Roll No...">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">
+                    <i class="bi bi-funnel-fill"></i> Fetch Data
+                </button>
+            </div>
+        </div>
+
+        <hr class="my-2">
+
+        <!-- Checkboxes for Columns to Extract -->
+        <label class="form-label fw-bold text-primary mb-2">
+            <i class="bi bi-check2-square"></i> चुनें कि कौन सा डेटा देखना/निकालना है (Select Fields to Display):
+        </label>
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="fields" value="scholar_no" id="f_scholar" {% if 'scholar_no' in selected_fields or not selected_fields %}checked{% endif %}>
+                <label class="form-check-label" for="f_scholar">Scholar No</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="fields" value="father_name" id="f_father" {% if 'father_name' in selected_fields or not selected_fields %}checked{% endif %}>
+                <label class="form-check-label" for="f_father">Father Name</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="fields" value="dob" id="f_dob" {% if 'dob' in selected_fields %}checked{% endif %}>
+                <label class="form-check-label" for="f_dob">Date of Birth (DOB)</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="fields" value="mobile" id="f_mobile" {% if 'mobile' in selected_fields %}checked{% endif %}>
+                <label class="form-check-label" for="f_mobile">Mobile No</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="fields" value="aadhaar" id="f_aadhaar" {% if 'aadhaar' in selected_fields %}checked{% endif %}>
+                <label class="form-check-label" for="f_aadhaar">Aadhaar Card</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="fields" value="bank_acc" id="f_bank_acc" {% if 'bank_acc' in selected_fields %}checked{% endif %}>
+                <label class="form-check-label" for="f_bank_acc">Bank Account No</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="fields" value="ifsc" id="f_ifsc" {% if 'ifsc' in selected_fields %}checked{% endif %}>
+                <label class="form-check-label" for="f_ifsc">IFSC Code</label>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- Dynamic Output Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th style="width: 50px;">S.N.</th>
+                    <th style="width: 80px;">Class</th>
+                    <th>Student Name</th>
+
+                    {% if 'scholar_no' in selected_fields or not selected_fields %}<th style="width: 100px;">Scholar No</th>{% endif %}
+                    {% if 'father_name' in selected_fields or not selected_fields %}<th>Father Name</th>{% endif %}
+                    {% if 'dob' in selected_fields %}<th>Date of Birth</th>{% endif %}
+                    {% if 'mobile' in selected_fields %}<th>Mobile No</th>{% endif %}
+                    {% if 'aadhaar' in selected_fields %}<th>Aadhaar Card</th>{% endif %}
+                    {% if 'bank_acc' in selected_fields %}<th>Bank Account No</th>{% endif %}
+                    {% if 'ifsc' in selected_fields %}<th>IFSC Code</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td class="text-center">{{ loop.index }}</td>
+                    <td class="text-center fw-bold text-primary">{{ s.class_name }}</td>
+                    <td class="fw-bold">{{ s.name }}</td>
+
+                    {% if 'scholar_no' in selected_fields or not selected_fields %}
+                        <td class="text-center fw-semibold">{{ s.scholar_no or '-' }}</td>
+                    {% endif %}
+
+                    {% if 'father_name' in selected_fields or not selected_fields %}
+                        <td>{{ s.father_name or '-' }}</td>
+                    {% endif %}
+
+                    {% if 'dob' in selected_fields %}
+                        <td class="text-center">{{ s.dob or '-' }}</td>
+                    {% endif %}
+
+                    {% if 'mobile' in selected_fields %}
+                        <td class="text-center">{{ s.mobile_no or s.phone or '-' }}</td>
+                    {% endif %}
+
+                    {% if 'aadhaar' in selected_fields %}
+                        <td class="text-center fw-bold">{{ s.aadhaar_no or '-' }}</td>
+                    {% endif %}
+
+                    {% if 'bank_acc' in selected_fields %}
+                        <td class="text-center fw-bold text-dark">{{ s.bank_acc_no or s.account_no or '-' }}</td>
+                    {% endif %}
+
+                    {% if 'ifsc' in selected_fields %}
+                        <td class="text-center font-monospace">{{ s.ifsc_code or '-' }}</td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" class="text-center text-muted py-4">कोई रिकॉर्ड उपलब्ध नहीं है।</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

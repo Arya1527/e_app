@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admit Card & Roll No. Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eef2f5; margin: 15px; }
+        .card { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; text-decoration: none; display: inline-block; font-size: 12px; }
+        .btn-success { background: #28a745; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #28a745; color: white; }
+        input[type="text"], input[type="date"] { padding: 5px; border: 1px solid #007bff; border-radius: 4px; font-weight: bold; }
+        .admit-card-box { border: 2px solid #000; padding: 15px; margin-top: 20px; page-break-after: always; background: #fff; }
+        .admit-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
+        .flex-box { display: flex; justify-content: space-between; }
+        img.student-photo { width: 90px; height: 90px; border: 1px solid #000; object-fit: cover; }
+        @media print {
+            body { background: white; margin: 0; }
+            .no-print { display: none !important; }
+            .card { box-shadow: none; padding: 0; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="no-print">
+            <a href="/register" class="btn" style="background:#6c757d;">← Admission Master</a>
+            <button onclick="window.print()" class="btn" style="background:#007bff; float:right;">🖨️ Print Admit Cards</button>
+            <h2>Roll No Assignment & Admit Cards</h2>
+
+            <!-- Class Filter Form -->
+            <form method="GET" style="margin-bottom:15px; display:flex; gap:10px; align-items:center;">
+                <label><b>Select Class:</b></label>
+                <select name="class_name" style="padding:6px; font-size:14px;" onchange="this.form.submit()">
+                    {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
+                    <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>Class {{ c }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+
+            <!-- Timetable Config Form -->
+            <details open style="background:#f8f9fa; padding:10px; border:1px solid #ccc; border-radius:5px; margin-bottom:15px;">
+                <summary style="font-weight:bold; cursor:pointer; color:#007bff;">⚙️ Configure Exam Time Table for Class {{ selected_class }}</summary>
+
+                <form method="POST" action="/save_timetable" style="margin-top:10px;">
+                    <!-- Hidden field to pass selected class name -->
+                    <input type="hidden" name="class_name" value="{{ selected_class }}">
+
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
+                        {% for i in range(1, 7) %}
+                        {% set t = timetable[i-1] if timetable and timetable|length >= i else None %}
+                        <div>
+                            <label><b>Paper {{ i }}:</b></label>
+                            <input type="date" name="date_{{ i }}" value="{{ t.exam_date if t else (t.date if t else '') }}" style="width:100%; margin-bottom:3px;">
+                            <input type="text" name="subject_{{ i }}" placeholder="Subject Name" value="{{ t.subject_name if t else (t.subject if t else '') }}" style="width:100%;">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-success" style="margin-top:10px;">Save Timetable</button>
+                </form>
+            </details>
+
+            <!-- Roll No Bulk Form -->
+            <form method="POST">
+                <button type="submit" class="btn btn-success">💾 Save All Roll Numbers</button>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Scholar No</th>
+                            <th>Student Name</th>
+                            <th>Father Name</th>
+                            <th>Class</th>
+                            <th>Assign / Edit Roll No</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in students %}
+                        <tr>
+                            <td>
+                                <input type="hidden" name="student_ids" value="{{ s.id }}">
+                                {{ s.scholar_no }}
+                            </td>
+                            <td>{{ s.name }}</td>
+                            <td>{{ s.father_name }}</td>
+                            <td>{{ s.class_name if s.class_name else s.class }}</td>
+                            <td>
+                                <input type="text" name="roll_{{ s.id }}" value="{{ s.roll_no or '' }}" placeholder="e.g. 1001" style="width:100px;">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+            <hr style="margin:30px 0;">
+            <h3 style="text-align:center;">--- Admit Cards Preview Below ---</h3>
+        </div>
+
+        <!-- Admit Cards Printable Section -->
+        {% for s in students %}
+        <div class="admit-card-box">
+            <div class="admit-header">
+                <h2 style="margin:0;">JYOTI NIKETAN H.S SCHOOL</h2>
+                <h4 style="margin:5px 0;">FIRST TERM EXAMINATION ADMIT CARD (2026)</h4>
+            </div>
+
+            <div class="flex-box">
+                <div>
+                    <p style="margin:3px 0;"><b>Student Name:</b> {{ s.name }}</p>
+                    <p style="margin:3px 0;"><b>Father's Name:</b> {{ s.father_name }}</p>
+                    <p style="margin:3px 0;"><b>Scholar No:</b> {{ s.scholar_no }}</p>
+                    <p style="margin:3px 0;"><b>Roll No:</b> <span style="font-size:18px; font-weight:bold;">{{ s.roll_no or 'Unassigned' }}</span></p>
+                    <p style="margin:3px 0;"><b>Class:</b> {{ s.class_name if s.class_name else s.class }} {% if s.group_name %}({{ s.group_name }}){% endif %}</p>
+                </div>
+                <div>
+                    {% if s.photo_path %}
+                    <img src="/{{ s.photo_path }}" class="student-photo">
+                    {% else %}
+                    <div style="width:90px; height:90px; border:1px solid #000; text-align:center; line-height:90px;">Photo</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <h5 style="margin:10px 0 5px 0;">Exam Time Table:</h5>
+            <table style="margin-top:0; font-size:11px;">
+                <thead>
+                    <tr>
+                        <th>Paper</th>
+                        <th>Date</th>
+                        <th>Subject</th>
+                        <th>Invigilator Sign</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if timetable and timetable|length > 0 %}
+                        {% for t in timetable %}
+                        <tr>
+                            <td>Paper {{ loop.index }}</td>
+                            <td>{{ t.exam_date if t.exam_date else t.date }}</td>
+                            <td>{{ t.subject_name if t.subject_name else t.subject }}</td>
+                            <td></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align:center;">Timetable not configured yet.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+
+            <div style="display:flex; justify-content:space-between; margin-top:30px; font-size:12px;">
+                <div>Candidate Signature</div>
+                <div>Principal Signature</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
