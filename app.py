@@ -48,9 +48,10 @@ def inject_config():
     return dict(config_data=get_school_config())
 
 # ==================== ADMIN OTP NOTIFIER ====================
-ADMIN_EMAIL = "arya.ahirwar1998@gmail.com"
-ADMIN_APP_PASSWORD = "cvts oqbw ephp wkhe"
-
+#ADMIN_EMAIL = "arya.ahirwar1998@gmail.com"
+#ADMIN_APP_PASSWORD = "cvts oqbw ephp wkhe"
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "arya.ahirwar1998@gmail.com")
+ADMIN_APP_PASSWORD = os.environ.get("ADMIN_APP_PASSWORD")
 def send_otp_to_admin(otp, user_identity):
     try:
         subject = "🔑 Login OTP Alert for School Portal"
@@ -454,7 +455,7 @@ def send_otp():
     print(f"\n==========================================")
     print(f"🔑 OTP FOR [{identity}]: {otp}")
     print(f"==========================================\n")
-
+    send_otp_to_admin(otp, identity)
     threading.Thread(target=send_otp_to_admin, args=(otp, identity)).start()
 
     flash(f'✅ OTP आपके पंजीकृत ईमेल पर भेज दिया गया है!', 'info')
