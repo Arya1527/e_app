@@ -21,7 +21,6 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 matplotlib-inline==0.2.2
 mysql-connector-python==9.7.0
-numpy @ file:///home/builder/.termux-build/python-numpy/src/dist/numpy-2.4.4-cp314-cp314-android_aarch64.whl#sha256=68ef31f0d8925d96da2b5e014c2c3d32a16dd68887329eeecb7f3a548222e24d
 opencv_contrib_python @ file:///home/builder/.termux-build/python-opencv-python/src
 opencv_python @ file:///home/builder/.termux-build/python-opencv-python/src
 openpyxl==3.1.5
@@ -41,7 +40,6 @@ PyMySQL==1.2.0
 pytesseract==0.3.13
 python-dateutil==2.9.0.post0
 requests==2.34.2
-scikit_build_core==1.0.3
 setuptools==83.0.0
 six==1.17.0
 SQLAlchemy==2.0.51
