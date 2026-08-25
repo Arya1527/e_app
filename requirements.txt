@@ -21,17 +21,16 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 matplotlib-inline==0.2.2
 mysql-connector-python==9.7.0
-opencv_contrib_python @ file:///home/builder/.termux-build/python-opencv-python/src
-opencv_python @ file:///home/builder/.termux-build/python-opencv-python/src
+opencv-python-headless
 openpyxl==3.1.5
 packaging==26.2
-pandas @ file:///home/builder/.termux-build/python-pandas/src/dist/pandas-3.0.5-cp314-cp314-android_aarch64.whl#sha256=2a35f0521e37d4736d43c1be8e440673d00f1d929bf5bc07090d0d6519e987bd
+pandas
 parso==0.8.7
 pathspec==1.1.1
 pexpect==4.9.0
-pillow @ file:///home/builder/.termux-build/python-pillow/src
+pillow
 prompt_toolkit==3.0.53
-psutil @ file:///home/builder/.termux-build/python-psutil/src
+psutil
 ptyprocess==0.7.0
 pure_eval==0.2.3
 pycryptodome==3.23.0
