@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Attendance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body class="p-3 p-md-4 bg-light">
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="bi bi-calendar-check-fill text-primary"></i> छात्र उपस्थिति (Student Attendance)</h3>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="bi bi-arrow-left"></i> Dashboard</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }} alert-dismissible fade show">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card p-3 mb-4 shadow-sm">
+        <form method="GET" action="{{ url_for('student_attendance') }}" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-bold">कक्षा (Class) चुनें</label>
+                <select name="class_name" class="form-select" required>
+                    <option value="">-- चुनें --</option>
+                    {% for c in classes %}
+                        <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label fw-bold">तारीख (Date)</label>
+                <input type="date" name="date" class="form-control" value="{{ attendance_date or '' }}" required>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> लोड करें</button>
+            </div>
+        </form>
+    </div>
+
+    {% if students %}
+    <!-- एडवांस फ़िल्टर (Sorting Option) -->
+    <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+        <span class="text-muted small">कुल छात्र: <b>{{ students|length }}</b></span>
+        <div class="d-flex align-items-center gap-2">
+            <label class="fw-bold small text-nowrap"><i class="bi bi-funnel-fill text-secondary"></i> क्रमबद्ध करें (Sort):</label>
+            <select id="sortOption" onchange="sortStudents()" class="form-select form-select-sm" style="width: auto;">
+                <option value="1" selected>नाम (A to Z)</option>
+                <option value="0">Scholar No</option>
+            </select>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('student_attendance') }}">
+        <input type="hidden" name="class_name" value="{{ selected_class }}">
+        <input type="hidden" name="attendance_date" value="{{ attendance_date }}">
+
+        <div class="card shadow-sm p-3">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="attendanceTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Scholar No</th>
+                            <th>Name</th>
+                            <th>Father's Name</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Notify Parent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in students %}
+                        <input type="hidden" name="student_ids" value="{{ s.id }}">
+                        <tr data-student-name="{{ s.name }}" data-phone="{{ s.mobile or s.phone or s.father_mobile or '' }}">
+                            <td>{{ s.scholar_no }}</td>
+                            <td class="fw-bold text-capitalize">{{ s.name }}</td>
+                            <td>{{ s.father_name }}</td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <input type="radio" class="btn-check" name="status_{{ s.id }}" id="p_{{ s.id }}" value="Present" {% if s.status == 'Present' %}checked{% endif %} onchange="toggleWhatsappBtn('{{ s.id }}')">
+                                    <label class="btn btn-outline-success btn-sm" for="p_{{ s.id }}">Present</label>
+
+                                    <input type="radio" class="btn-check" name="status_{{ s.id }}" id="a_{{ s.id }}" value="Absent" {% if s.status == 'Absent' %}checked{% endif %} onchange="toggleWhatsappBtn('{{ s.id }}')">
+                                    <label class="btn btn-outline-danger btn-sm" for="a_{{ s.id }}">Absent</label>
+
+                                    <input type="radio" class="btn-check" name="status_{{ s.id }}" id="l_{{ s.id }}" value="Leave" {% if s.status == 'Leave' %}checked{% endif %} onchange="toggleWhatsappBtn('{{ s.id }}')">
+                                    <label class="btn btn-outline-warning btn-sm" for="l_{{ s.id }}">Leave</label>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" id="wa_btn_{{ s.id }}" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm wa-btn d-none" onclick="sendWhatsappNotice('{{ s.name }}', '{{ s.mobile or s.phone or s.father_mobile or '' }}', '{{ s.id }}')">
+                                    <i class="bi bi-whatsapp"></i> सूचना भेजें
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" class="btn btn-success btn-lg w-100 mt-2 fw-bold"><i class="bi bi-save"></i> Attendance Save करें</button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// 1. Alphabetical (A-Z) sorting logic
+function sortStudents() {
+    var table = document.getElementById("attendanceTable");
+    if (!table) return;
+    var tbody = table.querySelector("tbody");
+    var rows = Array.from(tbody.querySelectorAll("tr"));
+    var colIndex = parseInt(document.getElementById("sortOption").value);
+
+    rows.sort(function(a, b) {
+        var valA = a.cells[colIndex].innerText.trim().toLowerCase();
+        var valB = b.cells[colIndex].innerText.trim().toLowerCase();
+
+        var numA = parseFloat(valA);
+        var numB = parseFloat(valB);
+
+        if (!isNaN(numA) && !isNaN(numB)) {
+            return numA - numB;
+        }
+        return valA.localeCompare(valB);
+    });
+
+    rows.forEach(function(row) {
+        tbody.appendChild(row);
+    });
+}
+
+// 2. Attendance status change handler
+function toggleWhatsappBtn(studentId) {
+    var isAbsent = document.getElementById("a_" + studentId).checked;
+    var isLeave = document.getElementById("l_" + studentId).checked;
+    var waBtn = document.getElementById("wa_btn_" + studentId);
+
+    if (waBtn) {
+        if (isAbsent || isLeave) {
+            waBtn.classList.remove("d-none");
+        } else {
+            waBtn.classList.add("d-none");
+        }
+    }
+}
+
+// 3. WhatsApp Direct Notification Sender
+function sendWhatsappNotice(studentName, mobileNumber, studentId) {
+    var isAbsent = document.getElementById("a_" + studentId).checked;
+    var isLeave = document.getElementById("l_" + studentId).checked;
+    var attDate = document.querySelector('input[name="attendance_date"]').value || 'आज';
+    
+    var statusText = isAbsent ? "अनुपस्थित (Absent)" : "अवकाश पर (On Leave)";
+    
+    var message = "सादर प्रणाम,\n\nयह सूचित किया जाता है कि आपका बच्चा *" + studentName + "* आज दिनांक *" + attDate + "* को विद्यालय में *" + statusText + "* है।\n\nकृपया अनुपस्थिति/अवकाश का कारण विद्यालय प्रबंधन को सूचित करें।\n\nधन्यवाद,\n*Jyoti Niketan H.S. School*";
+
+    var formattedPhone = mobileNumber ? mobileNumber.toString().replace(/\D/g, '') : '';
+    if (formattedPhone.length === 10) {
+        formattedPhone = '91' + formattedPhone;
+    }
+
+    var waUrl = "";
+    if (formattedPhone) {
+        waUrl = "https://api.whatsapp.com/send?phone=" + formattedPhone + "&text=" + encodeURIComponent(message);
+    } else {
+        waUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(message);
+    }
+
+    window.open(waUrl, '_blank');
+}
+
+// Run initial configurations on load
+document.addEventListener("DOMContentLoaded", function() {
+    sortStudents();
+    
+    // Auto-toggle WhatsApp buttons for pre-filled Absent/Leave records
+    var allRows = document.querySelectorAll("#attendanceTable tbody tr");
+    allRows.forEach(function(row) {
+        var radioGroup = row.querySelectorAll('input[type="radio"]');
+        if (radioGroup.length > 0) {
+            var studentId = radioGroup[0].name.replace('status_', '');
+            toggleWhatsappBtn(studentId);
+        }
+    });
+});
+</script>
+</body>
+</html>

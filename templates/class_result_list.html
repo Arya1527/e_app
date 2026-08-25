@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>कक्षा वार परीक्षा परिणाम सूची - {{ selected_class }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 15px; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; }
+        .header h2 { margin: 2px; font-size: 22px; }
+        .header h3 { margin: 2px; color: #333; font-size: 16px; }
+        .info-bar { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: bold; font-size: 14px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        th, td { border: 1px solid #000; padding: 4px 6px; text-align: center; font-size: 12px; vertical-align: middle; }
+        th { background-color: #f2f2f2; }
+        
+        .sub-table { width: 100%; border-collapse: collapse; }
+        .sub-table td, .sub-table th { border: none; border-bottom: 1px solid #ddd; padding: 2px; font-size: 11px; }
+        .sub-table tr:last-child td { border-bottom: none; }
+        
+        .pass { color: green; font-weight: bold; }
+        .fail { color: red; font-weight: bold; }
+        .sub-fail { color: red; font-weight: bold; background-color: #ffe6e6; }
+        
+        .footer-sig { margin-top: 40px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
+        
+        @media print {
+            .no-print { display: none; }
+            body { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print" style="margin-bottom: 15px;">
+        <form method="GET" action="{{ url_for('class_result_list') }}">
+            <label><b>कक्षा चुनें:</b></label>
+            <select name="class_name" onchange="this.form.submit()" style="padding: 5px;">
+                {% for c in ['Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'] %}
+                    <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+            <button type="button" onclick="window.print()" style="padding: 5px 15px; cursor: pointer;">🖨️ Print Result Summary</button>
+        </form>
+    </div>
+
+    <div class="header">
+        <h2>{{ config_data.school_name }}</h2>
+        <h3> परीक्षा परिणाम सूची (Academic Session: {{ config_data.academic_session }})</h3>
+        <p style="margin: 2px;"><b>कक्षा:</b> {{ selected_class }}</p>
+    </div>
+
+    <div class="info-bar">
+        <span>कुल छात्र: {{ stats.total }}</span>
+        <span>उत्तीर्ण (Pass): {{ stats.passed }}</span>
+        <span>अनुत्तीर्ण (Fail): {{ stats.failed }}</span>
+        <span>परिणाम प्रतिशत: {{ stats.pass_percentage }}%</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 4%;">क्र.</th>
+                <th style="width: 8%;">रोल नं.</th>
+                <th style="width: 8%;">स्कॉलर नं.</th>
+                <th style="width: 16%;">छात्र का नाम / पिता का नाम</th>
+                <th style="width: 38%;">विषयवार अंक (Theory + Project = Total)</th>
+                <th style="width: 10%;">कुल अंक</th>
+                <th style="width: 8%;">प्रतिशत (%)</th>
+                <th style="width: 8%;">परिणाम</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in students %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td><b>{{ s.roll_no }}</b></td>
+                <td>{{ s.scholar_no }}</td>
+                <td style="text-align: left; padding-left: 8px;">
+                    <b>{{ s.name }}</b><br>
+                    <small style="color: #444;">पिता: {{ s.father_name }}</small>
+                </td>
+                <td style="padding: 0;">
+                    <table class="sub-table">
+                        <tr style="background: #f9f9f9; font-weight: bold;">
+                            <td style="text-align: left; width: 40%;">Subject</td>
+                            <td style="width: 20%;">TH</td>
+                            <td style="width: 20%;">PR</td>
+                            <td style="width: 20%;">TOT</td>
+                        </tr>
+                        {% for sub, m in s.scores.items() %}
+                        <tr class="{% if m.status == 'Fail' %}sub-fail{% endif %}">
+                            <td style="text-align: left; padding-left: 4px;">{{ sub }}</td>
+                         <td>{{ m.theory | int }}</td>
+                         <td>{{ m.project | int }}</td>
+                         <td><b>{{ m.total | int }}</b></td>
+                
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </td>
+               <td><b>{{ s.total_obtained | int }}</b> / {{ s.total_max | int }}</td>
+
+                <td><b>{{ s.percentage }}%</b></td>
+                <td class="{% if s.result == 'Pass' %}pass{% else %}fail{% endif %}">
+                    {{ s.result }}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8">इस कक्षा का कोई परिणाम डेटा उपलब्ध नहीं है।</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer-sig">
+        <div>कक्षा अध्यापक के हस्ताक्षर: ........................</div>
+        <div>जांचकर्ता के हस्ताक्षर: ........................</div>
+        <div>प्रिंसिपल के हस्ताक्षर: ........................</div>
+    </div>
+
+</body>
+</html>

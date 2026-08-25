@@ -3,62 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Settings</title>
+    <title>School Settings - System Configuration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        body { background: #eef2f3; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .card { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .settings-card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .logo-preview { width: 120px; height: 120px; border: 2px dashed #0d6efd; border-radius: 8px; object-fit: contain; padding: 5px; }
     </style>
 </head>
-<body class="p-3 p-md-5">
-
-<div class="container" style="max-width: 650px;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
-            <i class="bi bi-arrow-left"></i> Back to Dashboard
-        </a>
-    </div>
-
-    <div class="card p-4">
-        <h3 class="fw-bold text-primary mb-3"><i class="bi bi-gear-fill"></i> System & School Settings</h3>
-        <hr>
-
-        {% if msg %}
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ msg }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<body class="p-3 p-md-4">
+    <div class="container" style="max-width: 800px;">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-primary mb-0"><i class="bi bi-gear-fill me-2"></i>स्कूल सेटिंग्स (School Settings)</h3>
+            <a href="/register" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Dashboard</a>
         </div>
-        {% endif %}
 
-        <form method="POST" action="{{ url_for('settings') }}">
-            <div class="mb-3">
-                <label class="form-label fw-semibold">School Name (स्कूल का नाम)</label>
-                <input type="text" name="school_name" class="form-control" value="{{ config_data.school_name }}" required>
-            </div>
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Principal Name (प्रिंसिपल का नाम)</label>
-                <input type="text" name="principal_name" class="form-control" value="{{ config_data.principal_name }}" required>
-            </div>
+        <!-- Settings Form -->
+        <div class="card settings-card border-0 bg-white p-4">
+            <form method="POST" action="/settings" enctype="multipart/form-data">
+                <input type="hidden" name="existing_logo" value="{{ settings.logo_path or '' }}">
+                
+                <div class="row g-3">
+                    <!-- Current Logo Section -->
+                    <div class="col-12 text-center mb-2">
+                        <label class="form-label d-block fw-bold text-secondary">स्कूल का लोगो (School Logo)</label>
+                        {% if settings.logo_path %}
+                            <img src="/static/{{ settings.logo_path }}" class="logo-preview mb-2" id="preview">
+                        {% else %}
+                            <div class="logo-preview d-inline-flex align-items-center justify-content-center text-muted mb-2" id="preview-placeholder">
+                                <i class="bi bi-image fs-1"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <input type="file" name="logo" class="form-control form-control-sm d-inline-block" style="max-width: 300px;" accept="image/*">
+                        </div>
+                    </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">School Address / Subtitle</label>
-                <input type="text" name="school_address" class="form-control" value="{{ config_data.school_address }}">
-            </div>
+                    <hr>
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Academic Session (सत्र)</label>
-                <input type="text" name="academic_session" class="form-control" value="{{ config_data.academic_session }}">
-            </div>
+                    <!-- School Details -->
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">स्कूल का नाम (School Name)</label>
+                        <input type="text" name="school_name" class="form-control" value="{{ settings.school_name or '' }}" required>
+                    </div>
 
-            <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm">
-                <i class="bi bi-save"></i> Save Settings
-            </button>
-        </form>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">स्कूल का पता (Address)</label>
+                        <textarea name="address" class="form-control" rows="2" required>{{ settings.address or '' }}</textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">संपर्क नंबर (Phone / Mobile)</label>
+                        <input type="text" name="phone" class="form-control" value="{{ settings.phone or '' }}" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">शैक्षणिक सत्र (Academic Session)</label>
+                        <input type="text" name="session" class="form-control" placeholder="e.g. 2026-27" value="{{ settings.session or '' }}" required>
+                    </div>
+                </div>
+
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">
+                        <i class="bi bi-save me-1"></i> सेटिंग्स सेव करें (Save Settings)
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

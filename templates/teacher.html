@@ -73,7 +73,7 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label fw-medium">Class <span class="text-danger">*</span></label>
                     <select name="class_name" id="class_select" class="form-select" required onchange="renderSubjects()">
                         <option value="">Select Class</option>
@@ -82,7 +82,18 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-4" id="group_box" style="display:none;">
+                
+                <!-- NEW EXAM TYPE DROPDOWN -->
+         <div class="col-md-3">
+             <label class="form-label fw-medium">Exam Type <span class="text-danger">*</span></label>
+           <select name="exam_type" id="exam_type_select" class="form-select" required>
+        <option value="First Terminal Exam" selected>First Terminal Exam</option>
+        <option value="Second Terminal Exam">Second Terminal Exam</option>
+        <option value="Annual Exam">Annual Exam</option>
+    </select>
+           </div>
+
+                <div class="col-md-3" id="group_box" style="display:none;">
                     <label class="form-label fw-medium">Stream / Group</label>
                     <select name="group_name" id="group_select" class="form-select" onchange="renderSubjects()">
                         <option value="Commerce">Commerce</option>
@@ -91,14 +102,14 @@
                         <option value="Arts">Arts</option>
                     </select>
                 </div>
-                <div class="col-md-4" id="optional_sub_box" style="display:none;">
+                <div class="col-md-3" id="optional_sub_box" style="display:none;">
                     <label class="form-label fw-medium">Optional Subject Choice</label>
                     <select name="optional_subject" id="optional_select" class="form-select" onchange="renderSubjects()">
                         <option value="Informatics_Practices">Informatics Practices</option>
                         <option value="Economics">Economics</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label fw-medium">Teacher Name</label>
                     <input type="text" name="teacher_name" class="form-control" placeholder="Enter evaluator name">
                 </div>

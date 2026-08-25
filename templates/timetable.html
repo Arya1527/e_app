@@ -76,7 +76,13 @@
                     {% for s in schedules %}
                     <tr>
                         <td>Paper {{ s.paper_no if s.paper_no else loop.index }}</td>
-                        <td>{{ s.exam_date if s.exam_date else s.date }}</td>
+                        <td>
+                            {% set raw_date = s.exam_date if s.exam_date else s.date %}
+                            {% if raw_date %}
+                                {# YYYY-MM-DD को DD-MM-YYYY में बदलना #}
+                                {{ raw_date.split('-')[2] }}-{{ raw_date.split('-')[1] }}-{{ raw_date.split('-')[0] }}
+                            {% endif %}
+                        </td>
                         <td class="fw-bold">{{ s.subject_name if s.subject_name else s.subject }}</td>
                     </tr>
                     {% endfor %}

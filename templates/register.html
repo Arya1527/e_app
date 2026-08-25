@@ -14,14 +14,12 @@
             min-height:100vh;
             font-family:'Segoe UI',sans-serif;
         }
-
         .register-card{
             background:rgba(255,255,255,.96);
             border-radius:20px;
             box-shadow:0 15px 40px rgba(0,0,0,.25);
             padding:35px;
         }
-
         .section-title{
             background:linear-gradient(90deg,#0d6efd,#6610f2);
             color:#fff;
@@ -203,6 +201,19 @@
                 </select>
             </div>
 
+            <!-- Student Caste Field -->
+            <div class="col-md-6">
+                <label>Caste / वर्ग</label>
+                <select name="caste" class="form-select">
+                    <option value="" selected>Select Caste</option>
+                    <option value="General">General</option>
+                    <option value="OBC">OBC</option>
+                    <option value="SC">SC</option>
+                    <option value="ST">ST</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
             <div class="col-md-6">
                 <label>Class *</label>
                 <select name="class_name" class="form-select" required>
@@ -213,7 +224,7 @@
                 </select>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <label>Address</label>
                 <input type="text" name="address" class="form-control" placeholder="Village / Town, District">
             </div>
@@ -238,14 +249,16 @@
                 <input type="text" name="aadhaar_id" class="form-control" placeholder="12 Digit Aadhaar">
             </div>
 
+            <!-- APAAR ID Field -->
             <div class="col-md-6">
                 <label>APAAR ID</label>
-                <input type="text" name="apaar_id" class="form-control">
+                <input type="text" name="apaar_id" class="form-control" placeholder="12 Digit APAAR ID" maxlength="12">
             </div>
 
+            <!-- PEN Number Field -->
             <div class="col-md-6">
                 <label>PEN Number</label>
-                <input type="text" name="pen_number" class="form-control">
+                <input type="text" name="pen_number" class="form-control" placeholder="Permanent Education Number">
             </div>
 
             <div class="col-md-6">

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>फीस रसीद - {{ tx.receipt_no }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .receipt-box { width: 600px; margin: auto; border: 2px solid #000; padding: 20px; border-radius: 8px; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .info-table { width: 100%; margin-top: 15px; border-collapse: collapse; }
+        .info-table td { padding: 6px; font-size: 14px; }
+        .amount-box { background-color: #f2f2f2; border: 1px solid #000; padding: 10px; margin-top: 15px; font-weight: bold; }
+        .footer-sig { margin-top: 40px; display: flex; justify-content: space-between; font-weight: bold; }
+        @media print { .no-print { display: none; } .receipt-box { width: 100%; border: 1px solid #000; } }
+    </style>
+</head>
+<body>
+
+<div class="no-print" style="text-align: center; margin-bottom: 20px;">
+    <button onclick="window.print()" style="padding: 10px 20px; background: green; color: white; border: none; font-weight: bold; cursor: pointer;">🖨️ प्रिंट फीस रसीद (Print Receipt)</button>
+    <a href="/fee_management" style="margin-left: 10px; text-decoration: none;">वापस जाएँ</a>
+</div>
+
+<div class="receipt-box">
+    <div class="header">
+        <h2 style="margin: 0;">{{ config_data.school_name }}</h2>
+        <p style="margin: 3px 0;">फीस भुगतान रसीद (Fee Payment Receipt)</p>
+        <small><b>रसीद नं:</b> {{ tx.receipt_no }} | <b>दिनांक:</b> {{ tx.payment_date }}</small>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td><b>स्कॉलर नं:</b> {{ tx.scholar_no }}</td>
+            <td><b>कक्षा:</b> {{ tx.class_name }}</td>
+        </tr>
+        <tr>
+            <td><b>छात्र का नाम:</b> {{ tx.name }}</td>
+            <td><b>पिता का नाम:</b> {{ tx.father_name }}</td>
+        </tr>
+        <tr>
+            <td><b>भुगतान माध्यम:</b> {{ tx.payment_mode }}</td>
+            <td><b>मोबाइल:</b> {{ tx.mobile_no }}</td>
+        </tr>
+    </table>
+
+    <div class="amount-box">
+        <div style="display: flex; justify-content: space-between;">
+            <span>कुल निर्धारित फीस:</span>
+            <span>₹{{ total_fee }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; color: green; font-size: 18px; margin: 5px 0;">
+            <span>आज प्राप्त राशि (Paid Amount):</span>
+            <span>₹{{ tx.amount_paid }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+            <span>कुल जमा राशि:</span>
+            <span>₹{{ total_paid }}</span>
+        </div>
+        <hr style="margin: 5px 0;">
+        <div style="display: flex; justify-content: space-between; color: red;">
+            <span>शेष बकाया (Remaining Due):</span>
+            <span>₹{{ due_amount }}</span>
+        </div>
+    </div>
+
+    <div class="footer-sig">
+        <div>अभिभावक के हस्ताक्षर</div>
+        <div>प्राधिकृत हस्ताक्षर (स्कूल सील)</div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Attendance Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light py-4">
+<div class="container" style="max-width: 1100px;">
+
+    <!-- Top Header Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+        </a>
+        <h4 class="m-0 fw-bold text-primary">
+            <i class="fa-solid fa-calendar-days me-2"></i>मासिक उपस्थिति रिपोर्ट (Monthly Attendance)
+        </h4>
+    </div>
+
+    <!-- Filter & Delete Control Card -->
+    <div class="card p-3 shadow-sm border-0 mb-4 rounded-3">
+        <div class="row align-items-end g-3">
+
+            <!-- Filter Form -->
+            <div class="col-md-{% if selected_class and selected_month %}9{% else %}12{% endif %}">
+                <form method="GET" action="/attendance_report" class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold">कक्षा चुनें (Select Class)</label>
+                        <select name="class_name" class="form-select" required>
+                            <option value="">कक्षा चुनें...</option>
+                            {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
+                            <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>Class {{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">महीना चुनें (Month)</label>
+                        <input type="month" name="month" class="form-control" value="{{ selected_month }}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> रिपोर्ट देखें
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Clear / Delete Button -->
+            {% if selected_class and selected_month %}
+            <div class="col-md-3 text-end">
+                <form method="POST" action="{{ url_for('delete_student_attendance') }}" onsubmit="return confirm('क्या आप कक्षा {{ selected_class }} की {{ selected_month }} माह की पूरी अटेंडेंस डिलीट करना चाहते हैं?');">
+                    <input type="hidden" name="class_name" value="{{ selected_class }}">
+                    <input type="hidden" name="month" value="{{ selected_month }}">
+                    <button type="submit" class="btn btn-danger w-100 fw-bold text-nowrap">
+                        <i class="fa-solid fa-trash-can me-1"></i> Clear Data
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- Report Table -->
+    {% if report %}
+    
+    <!-- Working Days Header Info -->
+    <div class="alert alert-info py-2 px-3 fw-bold mb-3 d-flex justify-content-between align-items-center">
+        <span>कक्षा: {{ selected_class }} | माह: {{ selected_month }}</span>
+        <span>कुल स्कूल कार्य दिवस (School Days): <span class="text-danger fs-5">{{ working_days|default(0) }}</span> दिन</span>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0 text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Scholar No</th>
+                            <th>विद्यार्थी का नाम</th>
+                            <th>कुल स्कूल दिन</th>
+                            <th>उपस्थित दिन</th>
+                            <th>अनुपस्थित दिन</th>
+                            <th>प्रतिशत (%)</th>
+                            <th>WhatsApp SMS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report %}
+                        {% set p = row.present_days or 0 %}
+                        {% set a = row.absent_days or 0 %}
+                        {% set total_days = working_days|default(0) %}
+                        {% set pct = row.percentage or 0 %}
+                        
+                        <!-- WhatsApp Message Generator for Parents -->
+                        {% set msg = "नमस्ते, आपके बच्चे " ~ row.name ~ " (कक्षा: " ~ selected_class ~ ") की माह " ~ selected_month ~ " की उपस्थिति रिपोर्ट: कुल " ~ total_days ~ " दिन स्कूल में से छात्र " ~ p ~ " दिन उपस्थित और " ~ a ~ " दिन अनुपस्थित (Absent) रहा। उपस्थिति: " ~ pct ~ "% - स्कूल कार्यालय" %}
+
+                        <tr>
+                            <td><strong>{{ row.scholar_no }}</strong></td>
+                            <td class="text-start"><strong>{{ row.name }}</strong></td>
+                            <td><span class="fw-bold text-secondary">{{ total_days }}</span></td>
+                            <td><span class="badge bg-success fs-6">{{ p }} दिन</span></td>
+                            <td><span class="badge bg-danger fs-6">{{ a }} दिन</span></td>
+                            <td>
+                                {% if pct < 75 %}
+                                <span class="badge bg-danger fs-6">{{ pct }}%</span>
+                                {% else %}
+                                <span class="badge bg-success fs-6">{{ pct }}%</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.father_phone %}
+                                <a href="https://api.whatsapp.com/send?phone=91{{ row.father_phone }}&text={{ msg | urlencode }}" target="_blank" class="btn btn-sm btn-success fw-bold text-nowrap">
+                                    <i class="fa-brands fa-whatsapp me-1"></i> SMS भेजें
+                                </a>
+                                {% else %}
+                                <span class="text-muted small">नंबर नहीं है</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% elif selected_class %}
+    <div class="alert alert-warning text-center fw-bold">
+        ⚠️ चुने गए महीने और कक्षा के लिए कोई Attendance रिकॉर्ड नहीं मिला।
+    </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

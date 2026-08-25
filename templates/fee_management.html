@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>फीस प्रबंधन - Fee Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light py-4">
+<div class="container" style="max-width: 1200px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+        </a>
+        <h3 class="fw-bold text-primary m-0">💳 फीस प्रबंधन (Fee Management)</h3>
+    </div>
+
+    <!-- 1. Class Fee Structure Setting -->
+    <div class="card p-3 shadow-sm border-0 mb-4 rounded-3">
+        <h5 class="fw-bold">⚙️ कक्षा अनुसार कुल फीस सेट / एडिट करें</h5>
+        <form method="POST" class="row g-2 align-items-center">
+            <input type="hidden" name="set_structure" value="1">
+            <div class="col-md-5">
+                <select name="class_name" class="form-select" required>
+                    <option value="">कक्षा चुनें...</option>
+                    {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
+                    <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="number" name="total_fee" class="form-control" placeholder="वार्षिक फीस (उदा. 12000)" required>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-success w-100 fw-bold">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> फीस सेट / अपडेट करें
+                </button>
+            </div>
+        </form>
+
+        <!-- Current Active Fee Structures -->
+        {% if structures %}
+        <div class="mt-3">
+            <small class="fw-bold text-muted">वर्तमान सेट की गई कक्षा फीस:</small>
+            <div class="d-flex flex-wrap gap-2 mt-1">
+                {% for st in structures %}
+                <span class="badge bg-secondary p-2 d-flex align-items-center gap-2">
+                    Class {{ st.class_name }}: ₹{{ st.total_fee }}
+                    <form method="POST" action="/delete_fee_structure/{{ st.class_name }}" class="d-inline" onsubmit="return confirm('क्या आप Class {{ st.class_name }} की फीस स्ट्रक्चर डिलीट करना चाहते हैं?');">
+                        <button type="submit" class="btn-close btn-close-white" style="font-size: 10px;"></button>
+                    </form>
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 2. Student Search -->
+    <div class="card p-3 shadow-sm border-0 mb-4 rounded-3">
+        <h5 class="fw-bold">🔍 कक्षा चुनकर फीस प्रबंधन देखें</h5>
+        <form method="GET" action="/fee_management" class="row g-2">
+            <div class="col-md-9">
+                <select name="class_name" class="form-select" required>
+                    <option value="">कक्षा चुनें...</option>
+                    {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
+                    <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>Class {{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100 fw-bold">
+                    <i class="fa-solid fa-magnifying-glass me-1"></i> छात्र सूची देखें
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Student Fee Table -->
+    {% if students %}
+    <div class="card shadow-sm border-0 rounded-3 p-2">
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle text-center mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Scholar No</th>
+                        <th>छात्र का नाम</th>
+                        <th>पिता का नाम</th>
+                        <th>कुल फीस</th>
+                        <th>जमा फीस</th>
+                        <th>बकाया (Due)</th>
+                        <th>क्रियाएँ (Actions)</th>
+                        <th>WhatsApp रिमाइंडर</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in students %}
+                    <tr>
+                        <td><b>{{ s.scholar_no }}</b></td>
+                        <td class="text-start fw-bold">{{ s.name }}</td>
+                        <td class="text-start">{{ s.father_name }}</td>
+                        <td>₹{{ s.total_fee }}</td>
+                        <td class="text-success fw-bold">₹{{ s.total_paid }}</td>
+                        <td class="text-danger fw-bold">₹{{ s.due_amount }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#payModal{{ s.id }}">
+                                    💰 जमा
+                                </button>
+                                <!-- नया फीचर: पूरी समरी रिपोर्ट देखने व प्रिंट करने के लिए लिंक -->
+                                <a href="/fee_summary/{{ s.id }}" class="btn btn-sm btn-info text-white">
+                                    📜 इतिहास
+                                </a>
+                                <button class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#historyModal{{ s.id }}">
+                                    🗑️ डिलीट
+                                </button>
+                            </div>
+
+                            <!-- Pay Modal -->
+                            <div class="modal fade" id="payModal{{ s.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content text-start">
+                                        <form method="POST">
+                                            <input type="hidden" name="collect_fee" value="1">
+                                            <input type="hidden" name="student_id" value="{{ s.id }}">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">फीस जमा: {{ s.name }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p class="mb-1"><b>कुल फीस:</b> ₹{{ s.total_fee }}</p>
+                                                <p class="text-danger"><b>बकाया राशि:</b> ₹{{ s.due_amount }}</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">जमा राशि (Paying Amount)</label>
+                                                    <input type="number" name="amount_paid" class="form-control" max="{{ s.due_amount }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">भुगतान माध्यम (Mode)</label>
+                                                    <select name="payment_mode" class="form-select">
+                                                        <option value="Cash">Cash (नकद)</option>
+                                                        <option value="UPI / Online">UPI / PhonePe / Paytm</option>
+                                                        <option value="Bank Transfer">Bank Transfer</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-success fw-bold">रसीद काटें & प्रिंट करें</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- History / Delete Entry Modal -->
+                            <div class="modal fade" id="historyModal{{ s.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content text-start">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">गलत फीस प्रविष्टि डिलीट करें - {{ s.name }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            {% if s.transactions %}
+                                            <table class="table table-sm table-striped border">
+                                                <thead>
+                                                    <tr>
+                                                        <th>रसीद नं</th>
+                                                        <th>तारीख</th>
+                                                        <th>माध्यम</th>
+                                                        <th>राशि</th>
+                                                        <th>एक्शन</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for tx in s.transactions %}
+                                                    <tr>
+                                                        <td>{{ tx.receipt_no }}</td>
+                                                        <td>{{ tx.payment_date }}</td>
+                                                        <td>{{ tx.payment_mode }}</td>
+                                                        <td class="fw-bold text-success">₹{{ tx.amount_paid }}</td>
+                                                        <td>
+                                                            <form method="POST" action="/delete_fee_transaction/{{ tx.id }}" onsubmit="return confirm('क्या आप इस फीस प्रविष्टि (₹{{ tx.amount_paid }}) को डिलीट करना चाहते हैं?');">
+                                                                <input type="hidden" name="class_name" value="{{ selected_class }}">
+                                                                <button type="submit" class="btn btn-sm btn-danger py-0 px-2">🗑️ डिलीट</button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                            {% else %}
+                                            <p class="text-muted text-center my-3">अभी तक कोई फीस प्रविष्टि जमा नहीं की गई है।</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </td>
+                        <td>
+                            {% if s.due_amount > 0 %}
+                                {% if s.mobile_no %}
+                                <a href="https://wa.me/91{{ s.mobile_no }}?text={{ s.sms_text | urlencode }}" target="_blank" class="btn btn-sm btn-success">
+                                    <i class="fa-brands fa-whatsapp me-1"></i> Remind SMS
+                                </a>
+                                {% else %}
+                                <span class="text-muted small">नंबर नहीं है</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="badge bg-success">पूरी जमा</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -9,18 +9,62 @@
         .card { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .btn { padding: 8px 15px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; text-decoration: none; display: inline-block; font-size: 12px; }
         .btn-success { background: #28a745; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
         th { background: #28a745; color: white; }
         input[type="text"], input[type="date"] { padding: 5px; border: 1px solid #007bff; border-radius: 4px; font-weight: bold; }
-        .admit-card-box { border: 2px solid #000; padding: 15px; margin-top: 20px; page-break-after: always; background: #fff; }
-        .admit-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
-        .flex-box { display: flex; justify-content: space-between; }
-        img.student-photo { width: 90px; height: 90px; border: 1px solid #000; object-fit: cover; }
+
+        /* स्क्रीन व्यू के लिए Admit Card Box */
+        .admit-card-box {
+            border: 2px dashed #333;
+            padding: 12px 15px;
+            margin-top: 15px;
+            background: #fff;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        /* हेडर में लोगो बाईं तरफ और टेक्स्ट सेंटर में रखने के लिए */
+        .admit-header {
+            display: grid;
+            grid-template-columns: 50px 1fr 50px;
+            align-items: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+        }
+        .school-logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+
+        .flex-box { display: flex; justify-content: space-between; align-items: flex-start; }
+        img.student-photo { width: 80px; height: 80px; border: 1px solid #000; object-fit: cover; }
+        img.qr-code { width: 75px; height: 75px; border: 1px solid #000; padding: 2px; }
+
+        /* =============== PRINT CSS SETUP (For Paper Saving) =============== */
         @media print {
-            body { background: white; margin: 0; }
+            @page {
+                size: A4 portrait;
+                margin: 10mm 10mm 10mm 10mm;
+            }
+            body { background: white; margin: 0; padding: 0; }
             .no-print { display: none !important; }
-            .card { box-shadow: none; padding: 0; max-width: 100%; }
+            .card { box-shadow: none; padding: 0; max-width: 100%; margin: 0; }
+
+            .admit-card-box:not(.selected-for-print) { display: none !important; }
+
+            .admit-card-box {
+                display: block !important;
+                border: 2px solid #000 !important;
+                margin-bottom: 15mm !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                height: ~46vh;
+            }
+
+            .sign-box { margin-top: 20px !important; }
         }
     </style>
 </head>
@@ -28,7 +72,7 @@
     <div class="card">
         <div class="no-print">
             <a href="/register" class="btn" style="background:#6c757d;">← Admission Master</a>
-            <button onclick="window.print()" class="btn" style="background:#007bff; float:right;">🖨️ Print Admit Cards</button>
+            <button onclick="printSelectedCards()" class="btn btn-success" style="float:right;">🖨️ Print Selected Cards</button>
             <h2>Roll No Assignment & Admit Cards</h2>
 
             <!-- Class Filter Form -->
@@ -46,17 +90,23 @@
                 <summary style="font-weight:bold; cursor:pointer; color:#007bff;">⚙️ Configure Exam Time Table for Class {{ selected_class }}</summary>
 
                 <form method="POST" action="/save_timetable" style="margin-top:10px;">
-                    <!-- Hidden field to pass selected class name -->
                     <input type="hidden" name="class_name" value="{{ selected_class }}">
-
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
                         {% for i in range(1, 7) %}
-                        {% set t = timetable[i-1] if timetable and timetable|length >= i else None %}
-                        <div>
-                            <label><b>Paper {{ i }}:</b></label>
-                            <input type="date" name="date_{{ i }}" value="{{ t.exam_date if t else (t.date if t else '') }}" style="width:100%; margin-bottom:3px;">
-                            <input type="text" name="subject_{{ i }}" placeholder="Subject Name" value="{{ t.subject_name if t else (t.subject if t else '') }}" style="width:100%;">
-                        </div>
+                            {% set ns = namespace(date='', subject='') %}
+                            {% if timetable %}
+                                {% for row in timetable %}
+                                    {% if row.paper_no == i %}
+                                        {% set ns.date = row.exam_date or row.date or '' %}
+                                        {% set ns.subject = row.subject_name or row.subject or '' %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            <div>
+                                <label><b>Paper {{ i }}:</b></label>
+                                <input type="date" name="date_{{ i }}" value="{{ ns.date }}" style="width:100%; margin-bottom:3px;">
+                                <input type="text" name="subject_{{ i }}" placeholder="Subject Name" value="{{ ns.subject }}" style="width:100%;">
+                            </div>
                         {% endfor %}
                     </div>
                     <button type="submit" class="btn btn-success" style="margin-top:10px;">Save Timetable</button>
@@ -69,6 +119,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th style="width:40px; text-align:center;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" title="Select All"></th>
                             <th>Scholar No</th>
                             <th>Student Name</th>
                             <th>Father Name</th>
@@ -79,6 +130,9 @@
                     <tbody>
                         {% for s in students %}
                         <tr>
+                            <td style="text-align:center;">
+                                <input type="checkbox" class="row-checkbox" data-target="card_{{ s.id }}" onchange="updateCardSelection(this)" checked>
+                            </td>
                             <td>
                                 <input type="hidden" name="student_ids" value="{{ s.id }}">
                                 {{ s.scholar_no }}
@@ -87,7 +141,7 @@
                             <td>{{ s.father_name }}</td>
                             <td>{{ s.class_name if s.class_name else s.class }}</td>
                             <td>
-                                <input type="text" name="roll_{{ s.id }}" value="{{ s.roll_no or '' }}" placeholder="e.g. 1001" style="width:100px;">
+                                <input type="text" name="roll_{{ s.id }}" class="roll-input" value="{{ s.roll_no or '' }}" placeholder="e.g. 1001" style="width:100px;" {% if loop.first %}oninput="autoFillRollNumbers(this)"{% endif %}>
                             </td>
                         </tr>
                         {% endfor %}
@@ -100,63 +154,139 @@
 
         <!-- Admit Cards Printable Section -->
         {% for s in students %}
-        <div class="admit-card-box">
+        <div class="admit-card-box selected-for-print" id="card_{{ s.id }}">
             <div class="admit-header">
-                <h2 style="margin:0;">JYOTI NIKETAN H.S SCHOOL</h2>
-                <h4 style="margin:5px 0;">FIRST TERM EXAMINATION ADMIT CARD (2026)</h4>
+                <!-- Left: Logo -->
+                <img src="/static/images/logo.png" alt="School Logo" class="school-logo">
+
+                <!-- Center: Text -->
+                <div style="text-align: center;">
+                    <h3 style="margin:0; font-size:18px;">JYOTI NIKETAN H.S SCHOOL</h3>
+                    <h5 style="margin:3px 0; font-size:12px;">FIRST TERM EXAMINATION ADMIT CARD (2026)</h5>
+                </div>
+
+                <!-- Right: Empty space for perfect center alignment -->
+                <div></div>
             </div>
 
             <div class="flex-box">
-                <div>
-                    <p style="margin:3px 0;"><b>Student Name:</b> {{ s.name }}</p>
-                    <p style="margin:3px 0;"><b>Father's Name:</b> {{ s.father_name }}</p>
-                    <p style="margin:3px 0;"><b>Scholar No:</b> {{ s.scholar_no }}</p>
-                    <p style="margin:3px 0;"><b>Roll No:</b> <span style="font-size:18px; font-weight:bold;">{{ s.roll_no or 'Unassigned' }}</span></p>
-                    <p style="margin:3px 0;"><b>Class:</b> {{ s.class_name if s.class_name else s.class }} {% if s.group_name %}({{ s.group_name }}){% endif %}</p>
-                </div>
-                <div>
-                    {% if s.photo_path %}
-                    <img src="/{{ s.photo_path }}" class="student-photo">
-                    {% else %}
-                    <div style="width:90px; height:90px; border:1px solid #000; text-align:center; line-height:90px;">Photo</div>
+                <!-- Details Block -->
+                <div style="font-size:12px;">
+                    <p style="margin:2px 0;"><b>Student Name:</b> {{ s.name }}</p>
+                    <p style="margin:2px 0;"><b>Father's Name:</b> {{ s.father_name }}</p>
+                    <p style="margin:2px 0;"><b>Scholar No:</b> {{ s.scholar_no }}</p>
+
+                    {% if s.dob %}
+                    <p style="margin:2px 0;"><b>Date of Birth:</b>
+                        {{ s.dob.split('-')[2] }}-{{ s.dob.split('-')[1] }}-{{ s.dob.split('-')[0] }}
+                    </p>
                     {% endif %}
+
+                    <p style="margin:2px 0;"><b>Roll No:</b> <span style="font-size:16px; font-weight:bold;">{{ s.roll_no or 'Unassigned' }}</span></p>
+                    <p style="margin:2px 0;"><b>Class:</b> {{ s.class_name if s.class_name else s.class }} {% if s.group_name %}({{ s.group_name }}){% endif %}</p>
+                </div>
+
+                <!-- Right Side Section (Photo & QR Code) -->
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <div>
+                        {% if s.photo_path %}
+                        <img src="/{{ s.photo_path }}" class="student-photo">
+                        {% else %}
+                        <div style="width:80px; height:80px; border:1px solid #000; text-align:center; line-height:80px; font-size:10px;">Photo</div>
+                        {% endif %}
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="{{ url_for('student_qr', scholar_no=s.scholar_no) }}" alt="QR Code" class="qr-code">
+                        <div style="font-size: 9px; font-weight: bold; margin-top: 2px;">
+                            ID: {{ s.scholar_no }}
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <h5 style="margin:10px 0 5px 0;">Exam Time Table:</h5>
-            <table style="margin-top:0; font-size:11px;">
+            <h5 style="margin:8px 0 4px 0; font-size:11px;">Exam Time Table:</h5>
+            <table style="margin-top:0; font-size:10px;">
                 <thead>
                     <tr>
-                        <th>Paper</th>
-                        <th>Date</th>
-                        <th>Subject</th>
-                        <th>Invigilator Sign</th>
+                        <th style="padding:3px 6px;">Paper</th>
+                        <th style="padding:3px 6px;">Date</th>
+                        <th style="padding:3px 6px;">Subject</th>
+                        <th style="padding:3px 6px;">Invigilator Sign</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% if timetable and timetable|length > 0 %}
                         {% for t in timetable %}
                         <tr>
-                            <td>Paper {{ loop.index }}</td>
-                            <td>{{ t.exam_date if t.exam_date else t.date }}</td>
-                            <td>{{ t.subject_name if t.subject_name else t.subject }}</td>
-                            <td></td>
+                            <td style="padding:3px 6px;">Paper {{ t.paper_no if t.paper_no else loop.index }}</td>
+                            <td style="padding:3px 6px;">{{ t.exam_date if t.exam_date else t.date }}</td>
+                            <td style="padding:3px 6px;">{{ t.subject_name if t.subject_name else t.subject }}</td>
+                            <td style="padding:3px 6px;"></td>
                         </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="4" style="text-align:center;">Timetable not configured yet.</td>
+                            <td colspan="4" style="text-align:center; padding:4px;">Timetable not configured yet.</td>
                         </tr>
                     {% endif %}
                 </tbody>
             </table>
 
-            <div style="display:flex; justify-content:space-between; margin-top:30px; font-size:12px;">
+            <div class="sign-box" style="display:flex; justify-content:space-between; margin-top:18px; font-size:11px;">
                 <div>Candidate Signature</div>
                 <div>Principal Signature</div>
             </div>
         </div>
         {% endfor %}
     </div>
+
+    <!-- JavaScript for Checkbox, Auto-Fill & Smart Printing -->
+    <script>
+    function autoFillRollNumbers(firstInput) {
+        var startValue = parseInt(firstInput.value, 10);
+        var inputs = document.querySelectorAll('.roll-input');
+        
+        if (!isNaN(startValue)) {
+            inputs.forEach(function(input, index) {
+                if (index > 0) {
+                    input.value = startValue + index;
+                }
+            });
+        } else if (firstInput.value.trim() === '') {
+            inputs.forEach(function(input, index) {
+                if (index > 0) {
+                    input.value = '';
+                }
+            });
+        }
+    }
+
+    function toggleSelectAll(source) {
+        var checkboxes = document.querySelectorAll('.row-checkbox');
+        checkboxes.forEach((cb) => {
+            cb.checked = source.checked;
+            updateCardSelection(cb);
+        });
+    }
+
+    function updateCardSelection(cb) {
+        var cardId = cb.getAttribute('data-target');
+        var cardBox = document.getElementById(cardId);
+        if (cb.checked) {
+            if (cardBox) cardBox.classList.add('selected-for-print');
+        } else {
+            if (cardBox) cardBox.classList.remove('selected-for-print');
+        }
+    }
+
+    function printSelectedCards() {
+        var checkboxes = document.querySelectorAll('.row-checkbox:checked');
+        if (checkboxes.length === 0) {
+            alert('कृपया प्रिंट करने के लिए कम से कम एक छात्र को चुनें!');
+            return;
+        }
+        window.print();
+    }
+    </script>
 </body>
 </html>

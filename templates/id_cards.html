@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Student ID Cards</title>
+    <title>Student ID Cards & QR Stickers</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 20px; }
         .filter-box { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .grid-container { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-start; }
 
         .id-card {
-            width: 86mm;
-            height: 54mm;
+            width: 86mm; height: 54mm;
             border: 2px solid #1a365d;
             border-radius: 8px;
             background: #ffffff;
@@ -21,7 +20,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.15);
             overflow: hidden;
         }
-
         .header-bg {
             background: #1a365d;
             color: white;
@@ -29,76 +27,48 @@
             padding: 3px 2px;
             border-radius: 4px;
         }
-        .school-name {
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .card-title {
-            font-size: 7.5px;
-            color: #e2e8f0;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-top: 1px;
-            text-transform: uppercase;
-        }
+        .school-name { font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-title { font-size: 7.5px; color: #e2e8f0; font-weight: 600; letter-spacing: 1px; margin-top: 1px; text-transform: uppercase; }
 
-        .card-body {
-            display: flex;
-            margin-top: 5px;
-            gap: 6px;
-        }
-        .photo-area {
-            width: 28%;
+        .card-body { display: flex; margin-top: 5px; gap: 6px; }
+        .photo-area { width: 28%; text-align: center; }
+        .photo-area img { width: 50px; height: 58px; border: 1px solid #718096; border-radius: 4px; object-fit: cover; }
+        .sch-text { font-size: 7.5px; font-weight: bold; margin-top: 2px; color: #1a365d; }
+
+        .details-area { width: 72%; font-size: 8.5px; line-height: 1.3; color: #2d3748; }
+        .details-area strong { color: #1a365d; display: inline-block; width: 52px; }
+        .address-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+
+        /* QR Code Sticker Sheet Styling for Bag/ID */
+        .qr-sheet-container { display: none; }
+        .qr-sticker {
+            width: 50mm;
+            height: 35mm;
+            border: 1.5px dashed #000;
+            padding: 4px;
             text-align: center;
+            background: #fff;
+            float: left;
+            margin: 5px;
+            box-sizing: border-box;
+            page-break-inside: avoid;
         }
-        .photo-area img {
-            width: 50px;
-            height: 58px;
-            border: 1px solid #718096;
-            border-radius: 4px;
-            object-fit: cover;
-        }
-        .sch-text {
-            font-size: 7.5px;
-            font-weight: bold;
-            margin-top: 2px;
-            color: #1a365d;
-        }
-
-        .details-area {
-            width: 72%;
-            font-size: 8.5px;
-            line-height: 1.3;
-            color: #2d3748;
-        }
-        .details-area strong {
-            color: #1a365d;
-            display: inline-block;
-            width: 52px;
-        }
-        .address-line {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 140px;
-        }
+        .qr-sticker img { width: 65px; height: 65px; }
 
         @media print {
             .no-print { display: none !important; }
             body { background: white; margin: 0; padding: 0; }
-            .grid-container { display: block; }
-            .id-card { float: left; margin: 4px; page-break-inside: avoid; }
+            .grid-container { display: none !important; }
+            .qr-sheet-container { display: block !important; }
         }
     </style>
 </head>
 <body>
 
     <div class="filter-box no-print">
-        <form method="GET" action="{{ url_for('id_card_generator') }}">
+        <form method="GET" action="{{ url_for('id_card_generator') }}" id="filterForm">
             <label><strong>Select Class:</strong></label>
-            <select name="class_name">
+            <select name="class_name" onchange="this.form.submit()">
                 <option value="">-- All Classes --</option>
                 {% for c in classes %}
                 <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
@@ -107,15 +77,24 @@
 
             <label style="margin-left: 15px;"><strong>Scholar No / Name:</strong></label>
             <input type="text" name="scholar_no" value="{{ scholar_no }}" placeholder="Search Student">
-
             <button type="submit" style="padding: 5px 12px; cursor: pointer;">Search</button>
-            <button type="button" onclick="window.print()" style="padding: 5px 15px; background: #2b6cb0; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">🖨️ Bulk Print ID Cards</button>
+
+            <button type="button" onclick="window.print()" style="padding: 5px 15px; background: #2b6cb0; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">🖨️ Print ID Cards</button>
+            <button type="button" onclick="printQRStickers()" style="padding: 5px 15px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">🏷️ Print Selected QR Stickers</button>
         </form>
     </div>
 
-    <div class="grid-container">
+    <!-- Normal ID Cards View with Checkboxes -->
+    <div style="margin-bottom: 10px;" class="no-print">
+        <label><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"> <b>Select All Students</b></label>
+    </div>
+
+    <div class="grid-container no-print">
         {% for s in students %}
         <div class="id-card">
+            <div style="position: absolute; top: 2px; right: 4px; z-index: 10;">
+                <input type="checkbox" name="student_checkbox" value="{{ s['id'] }}" data-name="{{ s['name'] }}" data-scholar="{{ s['scholar_no'] }}" data-class="{{ s['class_name'] }}" data-father="{{ s['father_name'] }}">
+            </div>
             <div class="header-bg">
                 <div class="school-name">JYOTI NIKETAN SCHOOL</div>
                 <div class="card-title">STUDENT IDENTITY CARD</div>
@@ -143,5 +122,47 @@
         {% endfor %}
     </div>
 
+    <!-- Hidden QR Sticker Container -->
+    <div id="qrSheet" class="qr-sheet-container"></div>
+
+    <script>
+        function toggleSelectAll(source) {
+            checkboxes = document.querySelectorAll('input[name="student_checkbox"]');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+        }
+
+        function printQRStickers() {
+            const selected = document.querySelectorAll('input[name="student_checkbox"]:checked');
+            if (selected.length === 0) {
+                alert("⚠️ कृपया कम से कम एक छात्र को टिक (Select) करें!");
+                return;
+            }
+
+            let html = '<h3 style="text-align:center; width:100%; margin-bottom:10px;">Student QR Code Stickers (For ID / Bag)</h3>';
+            selected.generate = true;
+            
+            selected.forEach(cb => {
+                const scholar = cb.getAttribute('data-scholar');
+                const name = cb.getAttribute('data-name');
+                const cls = cb.getAttribute('data-class');
+
+                html += `
+                    <div class="qr-sticker">
+                        <div style="font-size:9px; font-weight:bold; overflow:hidden; white-space:nowrap;">${name}</div>
+                        <div style="font-size:8px;">Class: ${cls} | Sch: ${scholar}</div>
+                        <img src="/student_qr/${scholar}" alt="QR">
+                        <div style="font-size:8px; font-weight:bold;">JYOTI NIKETAN H.S.S</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('qrSheet').innerHTML = html;
+
+            // QR Code लोड होने के लिए 0.8 सेकंड (800 मिलीसेकंड) का इंतज़ार करके प्रिंट खोलें
+            setTimeout(() => {
+                window.print();
+            }, 800);
+        }
+    </script>
 </body>
 </html>

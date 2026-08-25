@@ -29,10 +29,20 @@
                 <div class="form-group"><label>Father's Name</label><input type="text" name="father_name" value="{{ s.father_name }}" required></div>
                 <div class="form-group"><label>Mother's Name</label><input type="text" name="mother_name" value="{{ s.mother_name or '' }}"></div>
                 <div class="form-group"><label>Date of Birth</label><input type="date" name="dob" value="{{ s.dob }}" required></div>
+               <!-- Category / Caste Dropdown -->
+              <div class="col-md-4 mb-3">
+             <label class="form-label fw-bold">Category / Caste</label>
+            <select name="caste" class="form-select">
+            <option value="">Select Caste</option>
+            <option value="General" {% if student.caste == 'General' %}selected{% endif %}>General</option>
+           <option value="OBC" {% if student.caste == 'OBC' %}selected{% endif %}>OBC</option>
+           <option value="SC" {% if student.caste == 'SC' %}selected{% endif %}>SC</option>
+           <option value="ST" {% if student.caste == 'ST' %}selected{% endif %}>ST</option>
+             </select>
+             </div>
 
-                <div class="form-group">
-                    <label>Gender</label>
-                    <select name="gender">
+            <div class="form-group"> <label>Gender</label>
+                  <select name="gender">
                         <option value="Boy" {% if s.gender == 'Boy' or not s.gender %}selected{% endif %}>Boy</option>
                         <option value="Girl" {% if s.gender == 'Girl' %}selected{% endif %}>Girl</option>
                     </select>

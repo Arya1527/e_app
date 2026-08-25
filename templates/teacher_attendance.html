@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Attendance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body class="p-3 p-md-4 bg-light">
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="bi bi-person-check-fill text-success"></i> शिक्षक उपस्थिति (Teacher Attendance)</h3>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="bi bi-arrow-left"></i> Dashboard</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}{% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+      {% endfor %}{% endif %}
+    {% endwith %}
+
+    <div class="card p-3 mb-4 shadow-sm">
+        <form method="GET" action="{{ url_for('teacher_attendance') }}" class="row g-3 align-items-end">
+            <div class="col-md-9">
+                <label class="form-label fw-bold">तारीख (Date)</label>
+                <input type="date" name="date" class="form-control" value="{{ attendance_date or '' }}" required>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-success w-100"><i class="bi bi-search"></i> तारीख लोड करें</button>
+            </div>
+        </form>
+    </div>
+
+    {% if teachers %}
+    <form method="POST" action="{{ url_for('teacher_attendance') }}">
+        <input type="hidden" name="attendance_date" value="{{ attendance_date }}">
+
+        <div class="card shadow-sm p-3">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Teacher Name</th>
+                        <th>Designation</th>
+                        <th>Mobile</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in teachers %}
+                    <input type="hidden" name="teacher_ids" value="{{ t.id }}">
+                    <tr>
+                        <td class="fw-bold">{{ t.teacher_name }}</td>
+                        <td>{{ t.subject_designation }}</td>
+                        <td>{{ t.mobile_no }}</td>
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="status_{{ t.id }}" id="tp_{{ t.id }}" value="Present" {% if t.status == 'Present' %}checked{% endif %}>
+                                <label class="btn btn-outline-success btn-sm" for="tp_{{ t.id }}">Present</label>
+
+                                <input type="radio" class="btn-check" name="status_{{ t.id }}" id="ta_{{ t.id }}" value="Absent" {% if t.status == 'Absent' %}checked{% endif %}>
+                                <label class="btn btn-outline-danger btn-sm" for="ta_{{ t.id }}">Absent</label>
+
+                                <input type="radio" class="btn-check" name="status_{{ t.id }}" id="th_{{ t.id }}" value="Half Day" {% if t.status == 'Half Day' %}checked{% endif %}>
+                                <label class="btn btn-outline-warning btn-sm" for="th_{{ t.id }}">Half Day</label>
+
+                                <input type="radio" class="btn-check" name="status_{{ t.id }}" id="tl_{{ t.id }}" value="Leave" {% if t.status == 'Leave' %}checked{% endif %}>
+                                <label class="btn btn-outline-info btn-sm" for="tl_{{ t.id }}">Leave</label>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-2 fw-bold"><i class="bi bi-save"></i> Attendance Save करें</button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

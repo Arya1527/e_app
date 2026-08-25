@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>शिक्षक मासिक उपस्थिति रिपोर्ट</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f8f9fa; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #dee2e6; padding: 10px; text-align: center; }
+        th { background-color: #007bff; color: white; }
+        .badge-present { color: #155724; background-color: #d4edda; font-weight: bold; padding: 4px 8px; border-radius: 4px; }
+        .badge-absent { color: #721c24; background-color: #f8d7da; font-weight: bold; padding: 4px 8px; border-radius: 4px; }
+        .badge-half { color: #856404; background-color: #fff3cd; font-weight: bold; }
+        .btn-print { background-color: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-delete { background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-home { background-color: #6c757d; color: white; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 13.33px; display: inline-block; }
+        .btn-whatsapp { background-color: #25d366; color: white; padding: 6px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block; white-space: nowrap; }
+        @media print { .no-print { display: none; } body { background: white; margin: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Action and Filter Bar -->
+    <div class="no-print" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+
+        <!-- Month Selection Form -->
+        <form method="GET" action="{{ url_for('teacher_attendance_report') }}" style="display: flex; align-items: center; gap: 8px;">
+            <label><b>माह चुनें: </b></label>
+            <input type="month" name="month" value="{{ selected_month }}" required style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            <button type="submit" style="padding: 5px 12px; background-color: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                🔍 रिपोर्ट देखें
+            </button>
+        </form>
+
+        <!-- Right Side Controls -->
+        <div style="display: flex; align-items: center; gap: 10px;">
+            {% if selected_month %}
+            <form method="POST" action="{{ url_for('delete_teacher_attendance') }}" onsubmit="return confirm('क्या आप सभी शिक्षकों की {{ selected_month }} माह की पूरी अटेंडेंस डिलीट करना चाहते हैं?');" style="margin: 0;">
+                <input type="hidden" name="month" value="{{ selected_month }}">
+                <button type="submit" class="btn-delete">
+                    🗑️ Clear {{ selected_month }} Data
+                </button>
+            </form>
+            {% endif %}
+
+            <a href="{{ url_for('index') }}" class="btn-home">🏠 होम डैशबोर्ड</a>
+            <button class="btn-print" onclick="window.print()">🖨️ प्रिंट रिपोर्ट</button>
+        </div>
+
+    </div>
+
+    <!-- Header Section -->
+    <div class="header">
+        <h2>{{ config_data.school_name }}</h2>
+        <h3>शिक्षक मासिक उपस्थिति सारांश (Monthly Attendance Summary)</h3>
+        <p style="margin: 5px 0 0 0;"><b>माह:</b> {{ selected_month }} | <b>कुल स्कूल कार्य दिवस:</b> <span style="color: #007bff; font-size: 18px;">{{ working_days }}</span> दिन</p>
+    </div>
+
+    <!-- Attendance Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>क्र.</th>
+                <th>शिक्षक का नाम व मोबाइल</th>
+                <th>विषय / पद</th>
+                <th>कुल कार्य दिवस</th>
+                <th>उपस्थित दिन</th>
+                <th>अनुपस्थित दिन</th>
+                <th>हाफ डे / अवकाश</th>
+                <th>उपस्थिति (%)</th>
+                <th>मैसेज भेजें (WhatsApp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in report %}
+            {% set p = t.present_days or 0 %}
+            {% set a = t.absent_days or 0 %}
+            {% set pct = ((p / working_days) * 100) | round(1) if working_days > 0 else 0 %}
+            
+            <!-- WhatsApp Message Text Generator -->
+            {% set msg = "नमस्ते " ~ t.teacher_name ~ ", माह " ~ selected_month ~ " की उपस्थिति रिपोर्ट: कुल " ~ working_days ~ " दिन में से आप " ~ p ~ " दिन उपस्थित रहे और " ~ a ~ " दिन अनुपस्थित (Absent) रहे। आपकी उपस्थिति " ~ pct ~ "% है। - ज्योति निकेतन स्कूल" %}
+
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td style="text-align: left;">
+                    <b>{{ t.teacher_name }}</b><br>
+                    <span style="color: #555; font-size: 13px;">📞 {{ t.mobile_no }}</span>
+                </td>
+                <td>{{ t.subject_designation | default('N/A', true) }}</td>
+                <td><b>{{ working_days }}</b></td>
+                <td><span class="badge-present">{{ p }} दिन</span></td>
+                <td><span class="badge-absent">{{ a }} दिन</span></td>
+                <td>{{ t.half_days or 0 }} / {{ t.leaves_taken or 0 }}</td>
+                <td><b>{{ pct }}%</b></td>
+                <td>
+                    <a href="https://api.whatsapp.com/send?phone=91{{ t.mobile_no }}&text={{ msg | urlencode }}" target="_blank" class="btn-whatsapp">
+                        💬 WhatsApp भेजें
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" style="padding: 20px; color: #777;">इस माह का कोई शिक्षक उपस्थिति डेटा नहीं मिला।</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

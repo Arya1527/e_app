@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Information Search - {{ config_data.school_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; display: flex; align-items: center; font-family: 'Segoe UI', sans-serif; }
+        .card { border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body>
+<div class="container my-5" style="max-width: 500px;">
+    <div class="card p-4">
+        <div class="text-center mb-4">
+            <h4 class="fw-bold text-primary">{{ config_data.school_name }}</h4>
+            <p class="text-muted small">{{ config_data.school_address }}</p>
+            <span class="badge bg-primary px-3 py-2 rounded-pill">
+                <i class="bi bi-person-vcard"></i> छात्र विवरण पोर्टल
+            </span>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('public_student_search') }}" method="POST">
+            <div class="mb-3">
+                <label for="scholar_no" class="form-label fw-bold">स्कॉलर नंबर (Scholar No.):</label>
+                <input type="text" class="form-control form-control-lg" name="scholar_no" id="scholar_no" placeholder="उदाहरण: 1001" required autocomplete="off">
+            </div>
+            <button type="submit" class="btn btn-primary w-100 btn-lg shadow-sm">
+                <i class="bi bi-search"></i> छात्र जानकारी देखें
+            </button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

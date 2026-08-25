@@ -25,7 +25,7 @@
             <button onclick="window.print()" class="btn" style="background:#007bff; float:right;">🖨️ Print Attendance Sheet</button>
             <h2>Exam Control Sheet (Attendance Sheet)</h2>
 
-            <form method="GET" style="display:flex; gap:15px; align-items:center; background:#f8f9fa; padding:10px; border-radius:5px;">
+            <form method="GET" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap; background:#f8f9fa; padding:10px; border-radius:5px;">
                 <div>
                     <label><b>Class 1:</b></label>
                     <select name="class1" style="padding:5px;">
@@ -45,6 +45,15 @@
                     </select>
                 </div>
 
+                <div>
+                    <label><b>Sort By:</b></label>
+                    <select id="sortSelect" onchange="sortTable()" style="padding:5px;">
+                        <option value="1">Roll No</option>
+                        <option value="3" selected>Student Name (A-Z)</option>
+                        <option value="2">Scholar No</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn" style="background:#28a745;">Generate Sheet</button>
             </form>
         </div>
@@ -57,7 +66,7 @@
                 <p style="margin:3px 0;"><b>Class:</b> {{ c1 }} {% if c2 %} & {{ c2 }} (Merged){% endif %}</p>
             </div>
 
-            <table>
+            <table id="studentTable">
                 <thead>
                     <tr>
                         <th rowspan="2">S.N</th>
@@ -82,11 +91,11 @@
                 <tbody>
                     {% for s in students %}
                     <tr>
-                        <td>{{ loop.index }}</td>
-                        <td><b>{{ s.roll_no or 'N/A' }}</b></td>
-                        <td>{{ s.scholar_no }}</td>
-                        <td style="text-align:left;"><b>{{ s.name }}</b></td>
-                        <td>{{ s.class_name }}</td>
+                        <td class="sn-col">{{ loop.index }}</td>
+                        <td><b>{% if s.roll_no %}{{ s.roll_no }}{% elif s['roll_no'] %}{{ s['roll_no'] }}{% else %}-{% endif %}</b></td>
+                        <td>{{ s.scholar_no or s['scholar_no'] or '' }}</td>
+                        <td style="text-align:left;"><b>{{ s.name or s['name'] or '' }}</b></td>
+                        <td>{{ s.class_name or s['class_name'] or '' }}</td>
                         {% if timetable %}
                             {% for t in timetable %}<td></td>{% endfor %}
                         {% else %}
@@ -103,5 +112,41 @@
             </div>
         </div>
     </div>
+
+    <script>
+    function sortTable() {
+        var table = document.getElementById("studentTable");
+        var tbody = table.querySelector("tbody");
+        var rows = Array.from(tbody.querySelectorAll("tr"));
+        var colIndex = parseInt(document.getElementById("sortSelect").value);
+
+        rows.sort(function(a, b) {
+            var valA = a.cells[colIndex] ? a.cells[colIndex].innerText.trim().toLowerCase() : '';
+            var valB = b.cells[colIndex] ? b.cells[colIndex].innerText.trim().toLowerCase() : '';
+
+            // Hyphen/Empty handling
+            if (valA === '-' || valA === '') valA = '999999';
+            if (valB === '-' || valB === '') valB = '999999';
+
+            var numA = parseFloat(valA);
+            var numB = parseFloat(valB);
+
+            if (!isNaN(numA) && !isNaN(numB)) {
+                return numA - numB;
+            }
+            return valA.localeCompare(valB);
+        });
+
+        rows.forEach(function(row, index) {
+            tbody.appendChild(row);
+            row.cells[0].innerText = index + 1;
+        });
+    }
+
+    // Auto sort on load
+    window.onload = function() {
+        sortTable();
+    };
+    </script>
 </body>
 </html>

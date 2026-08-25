@@ -4,28 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JYOTI NIKETAN H.S SCHOOL</title>
-
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
     <style>
         body {
-            background: linear-gradient(135deg, #eef2f3, #8e9eab);
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .main-card {
             background: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
         .header-card {
-            background: #ffffff;
+            background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+        }
+        .nav-section-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
             padding: 15px;
-            border-bottom: 3px solid #0d6efd;
-            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .nav-section-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         .stat-card {
             border-radius: 12px;
@@ -88,12 +97,12 @@
     <!-- Login / Logout Header Buttons -->
     <div class="text-end mb-3 no-print">
         {% if session.get('is_authenticated') %}
-            <span class="badge bg-success me-2"><i class="bi bi-shield-check"></i> Logged In ({{ session.get('user_identity') }})</span>
-            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm rounded-pill">
+            <span class="badge bg-success me-2 px-3 py-2"><i class="bi bi-shield-check"></i> Logged In ({{ session.get('user_identity') }})</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm rounded-pill px-3">
                 <i class="bi bi-box-arrow-right"></i> Logout
             </a>
         {% else %}
-            <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm rounded-pill">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
                 <i class="bi bi-lock-fill"></i> Login for Working Mode
             </a>
         {% endif %}
@@ -101,48 +110,106 @@
 
     <!-- Header -->
     <div class="header-card text-center mb-4">
-        <h2 class="fw-bold m-0 text-primary">JYOTI NIKETAN H.S SCHOOL</h2>
-        <span class="badge bg-secondary">N_1_25_18_A_@_ Management System</span>
+        <h2 class="fw-bold m-0">JYOTI NIKETAN H.S SCHOOL</h2>
+        <span class="badge bg-light text-dark mt-2 px-3 py-1">N_1_25_18_A_@_ Management System</span>
     </div>
 
-    <!-- Navigation Buttons -->
-    <div class="d-flex flex-wrap justify-content-center gap-2 mb-4 no-print">
-        <a href="{{ url_for('register_student') }}" class="btn btn-primary btn-sm fw-bold rounded-pill px-3 shadow-sm">
-            <i class="bi bi-person-plus-fill"></i> Register New Student
-        </a>
-        <a href="{{ url_for('student_info_panel') }}" class="btn btn-success btn-sm fw-bold rounded-pill px-3 shadow-sm">
-            <i class="bi bi-card-checklist"></i> Student Details Master
-        </a>
-        <a href="{{ url_for('teacher_panel') }}" class="btn btn-warning btn-sm text-dark fw-bold rounded-pill px-3 shadow-sm">
-            <i class="bi bi-pencil-square"></i> Enter Marks (Teacher)
-        </a>
-        <a href="{{ url_for('admit_card_panel') }}" class="btn btn-info btn-sm text-white fw-bold rounded-pill px-3 shadow-sm">
-            <i class="bi bi-person-vcard"></i> Admit Cards
-        </a>
-        <a href="{{ url_for('exam_control') }}" class="btn btn-secondary btn-sm fw-bold rounded-pill px-3 shadow-sm">
-            <i class="bi bi-clipboard-check"></i> Attendance Sheet
-        </a>
-        <a href="{{ url_for('timetable_view') }}" class="btn btn-dark btn-sm fw-bold rounded-pill px-3 shadow-sm">
-            <i class="bi bi-calendar3"></i> Timetable & Schedule
-        </a>
-        <a href="{{ url_for('id_card_generator') }}" class="btn btn-primary btn-sm fw-bold rounded-pill px-3 shadow-sm">
-            <i class="bi bi-person-badge-fill"></i> ID Card Bulk Print
-        </a>
-        <a href="{{ url_for('send_class_msg') }}" class="btn btn-success btn-sm fw-bold rounded-pill px-3 shadow-sm">
-            <i class="bi bi-chat-dots-fill"></i> Send Class Message
-        </a>
-        <a href="{{ url_for('teachers_panel') }}" class="btn btn-danger btn-sm fw-bold rounded-pill px-3 shadow-sm">
-            <i class="bi bi-person-workspace"></i> Teachers Master
-        </a>
-        <a href="{{ url_for('send_teacher_msg') }}" class="btn btn-warning btn-sm text-dark fw-bold rounded-pill px-3 shadow-sm">
-            <i class="bi bi-envelope-paper-fill"></i> Notice to Teachers
-        </a>
-        <a href="{{ url_for('student_quick_view') }}" class="btn btn-dark btn-sm fw-bold rounded-pill px-3 shadow-sm">
-      <i class="bi bi-card-heading"></i> Quick Aadhaar View
-     </a>
-     <a href="{{ url_for('settings') }}" class="btn btn-secondary btn-sm fw-bold rounded-pill px-3 shadow-sm">
-      <i class="bi bi-gear-fill"></i> Settings
-      </a>
+    <!-- Professional Dynamic Navigation Panel (Dropdowns & Categorized Cards) -->
+    <div class="row g-3 mb-4 no-print">
+        
+        <!-- Category 1: Student Management -->
+        <div class="col-md-4">
+            <div class="nav-section-card h-100">
+                <h6 class="fw-bold text-primary mb-3"><i class="bi bi-people-fill me-1"></i> छात्र प्रबंधन (Students)</h6>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('register_student') }}" class="btn btn-outline-primary btn-sm text-start fw-semibold">
+                        <i class="bi bi-person-plus-fill me-2"></i> Register New Student
+                    </a>
+                    <a href="{{ url_for('student_info_panel') }}" class="btn btn-outline-primary btn-sm text-start fw-semibold">
+                        <i class="bi bi-card-checklist me-2"></i> Student Details Master
+                    </a>
+                    <a href="{{ url_for('student_quick_view') }}" class="btn btn-outline-primary btn-sm text-start fw-semibold">
+                        <i class="bi bi-card-heading me-2"></i> Quick Students View
+                    </a>
+                    <a href="{{ url_for('promote_students') }}" class="btn btn-outline-primary btn-sm text-start fw-semibold">
+                        <i class="bi bi-mortarboard-fill me-2"></i> Promote Students
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 2: Academics & Exams -->
+        <div class="col-md-4">
+            <div class="nav-section-card h-100">
+                <h6 class="fw-bold text-success mb-3"><i class="bi bi-journal-bookmark-fill me-1"></i> परीक्षा व परिणाम (Academics)</h6>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('teacher_panel') }}" class="btn btn-outline-success btn-sm text-start fw-semibold">
+                        <i class="bi bi-pencil-square me-2"></i> Enter Marks (Teacher)
+                    </a>
+                    <a href="{{ url_for('class_result_list', class_name=selected_class or '10th') }}" class="btn btn-outline-success btn-sm text-start fw-semibold">
+                        <i class="bi bi-clipboard-data me-2"></i> Class Result List (Principal)
+                    </a>
+                    <a href="{{ url_for('admit_card_panel') }}" class="btn btn-outline-success btn-sm text-start fw-semibold">
+                        <i class="bi bi-person-vcard me-2"></i> Admit Cards
+                    </a>
+                    <a href="{{ url_for('id_card_generator') }}" class="btn btn-outline-success btn-sm text-start fw-semibold">
+                        <i class="bi bi-person-badge-fill me-2"></i> ID Card Bulk Print
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 3: Attendance & Reports -->
+        <div class="col-md-4">
+            <div class="nav-section-card h-100">
+                <h6 class="fw-bold text-warning mb-3 text-dark"><i class="bi bi-calendar-check-fill me-1"></i> उपस्थिति व रिपोर्ट्स (Attendance)</h6>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('exam_control') }}" class="btn btn-outline-warning btn-sm text-start fw-semibold text-dark">
+                        <i class="bi bi-clipboard-check me-2"></i> Attendance Sheet Daily
+                    </a>
+                    <a href="{{ url_for('student_attendance') }}" class="btn btn-outline-warning btn-sm text-start fw-semibold text-dark">
+                        <i class="bi bi-calendar-check me-2"></i> Student Attendance Entry
+                    </a>
+                    <a href="{{ url_for('attendance_report') }}" class="btn btn-outline-warning btn-sm text-start fw-semibold text-dark">
+                        <i class="bi bi-chart-pie me-1"></i> Student Monthly Attendance
+                    </a>
+                    <a href="{{ url_for('teacher_attendance') }}" class="btn btn-outline-warning btn-sm text-start fw-semibold text-dark">
+                        <i class="bi bi-person-check me-2"></i> Teacher Attendance
+
+                    </a>
+                    <a href="{{ url_for('teacher_attendance_report') }}" class="btn btn-outline-warning btn-sm text-start fw-semibold text-dark">
+                        <i class="bi bi-file-text me-2"></i> Teacher Attendance Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+<!-- परीक्षा फॉर्म भरने और प्रिंट करने का नेविगेशन लिंक -->
+<div style="margin: 20px 0; text-align: right;">
+    <a href="/exam_application_form" style="background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+        📝 नया परीक्षा फॉर्म भरें / एडिट करें
+    </a>
+</div>
+
+
+    <!-- Secondary Dropdown Menu Bar for Extra Tools -->
+    <div class="dropdown mb-4 no-print text-center">
+        <button class="btn btn-dark dropdown-toggle px-4 py-2 rounded-pill fw-bold shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-tools me-2"></i> अन्य प्रबंधन एवं सेटिंग्स (Other Tools & Settings) ⚙️
+        </button>
+        <ul class="dropdown-menu shadow p-2" style="border-radius: 12px; min-width: 250px;">
+            <li><a class="dropdown-item rounded fw-semibold py-2" href="{{ url_for('teachers_panel') }}"><i class="bi bi-person-workspace me-2 text-danger"></i> Teachers Master</a></li>
+            <li><a class="dropdown-item rounded fw-semibold py-2" href="{{ url_for('timetable_view') }}"><i class="bi bi-calendar3 me-2 text-dark"></i> Timetable & Schedule</a></li>
+            <li><a class="dropdown-item rounded fw-semibold py-2" href="{{ url_for('fee_management') }}"><i class="bi bi-credit-card me-2 text-success"></i> Fees Management System</a></li>
+            <li><a class="dropdown-item rounded fw-semibold py-2" href="{{ url_for('tc_management') }}"><i class="bi bi-file-earmark-text me-2 text-warning"></i> TC Management</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item rounded fw-semibold py-2" href="{{ url_for('send_class_msg') }}"><i class="bi bi-chat-dots-fill me-2 text-primary"></i> Send Class WhatsApp Msg</a></li>
+            <li><a class="dropdown-item rounded fw-semibold py-2" href="{{ url_for('send_teacher_msg') }}"><i class="bi bi-envelope-paper-fill me-2 text-info"></i> Notice to Teachers</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item rounded fw-semibold py-2" href="{{ url_for('settings') }}"><i class="bi bi-gear-fill me-2 text-secondary"></i> System Settings</a></li>
+        </ul>
     </div>
 
     <!-- Stats -->
@@ -168,7 +235,7 @@
     </div>
 
     <!-- Search / Filter -->
-    <form method="GET" action="{{ url_for('index') }}" class="row g-2 mb-4 no-print align-items-center bg-light p-3 rounded-3 border">
+    <form method="GET" action="{{ url_for('index') }}" class="row g-2 mb-4 no-print align-items-center bg-light p-3 rounded-3 border shadow-sm">
         <div class="col-md-3">
             <select name="class_name" id="classSelect" class="form-select form-select-sm">
                 <option value="">-- सभी कक्षाएं --</option>
@@ -300,7 +367,7 @@ function triggerBulkPrint() {
 }
 </script>
 
-<!-- Bootstrap JS -->
+<!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

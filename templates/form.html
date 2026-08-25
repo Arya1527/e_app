@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Application Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
+        .form-container { background: #fff; padding: 20px; border-radius: 8px; max-width: 680px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 14px; }
+        input[type="text"], input[type="file"], select, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; }
+        .nav-link { text-align: center; margin-bottom: 15px; }
+        .search-box { background: #e8f4fd; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #b8daff; }
+        .subject-badge { display: inline-block; background: #e2e8f0; color: #0f172a; padding: 4px 8px; margin: 2px; border-radius: 4px; font-size: 13px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>{% if student %}फॉर्म एडिट करें{% else %}परीक्षा आवेदन फॉर्म भरें{% endif %}</h2>
+        <div class="nav-link">
+            <a href="/admin" style="color: #007bff; text-decoration: none; font-weight: bold;">📋 डैशबोर्ड पर जाएं</a>
+        </div>
+
+        <!-- Scholar ID Auto-Fill Search Box -->
+        <div class="search-box">
+            <form method="GET" action="{{ url_for('exam_application_form') }}">
+                <label style="color: #004085;">स्कॉलर नंबर से डेटा ऑटो-फिल करें:</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" name="scholar_no" placeholder="स्कॉलर नंबर दर्ज करें..." value="{{ student.scholar_no if student else '' }}" style="flex: 1;">
+                    <button type="submit" style="width: auto; padding: 7px 15px; background: #007bff;">सर्च करें</button>
+                </div>
+            </form>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% if edit_index is defined and edit_index is not none %}
+                <input type="hidden" name="edit_index" value="{{ edit_index }}">
+                <input type="hidden" name="old_photo" value="{{ student.photo_filename if student.photo_filename is defined else (student.photo_path if student.photo_path is defined else '') }}">
+                <input type="hidden" name="old_marksheet" value="{{ student.marksheet_filename if student.marksheet_filename is defined else '' }}">
+            {% endif %}
+
+            <input type="hidden" name="scholar_no" value="{{ student.scholar_no if student else '' }}">
+
+            <!-- Class Selection -->
+            <div class="input-group">
+                <label>कक्षा चुनें (Class):</label>
+                <select name="class_name" id="classSelect" onchange="handleClassAndStreamChange()">
+                    <option value="5th" {% if student and student.class_name == '5th' %}selected{% endif %}>5th Class</option>
+                    <option value="8th" {% if student and student.class_name == '8th' %}selected{% endif %}>8th Class</option>
+                    <option value="9th" {% if student and student.class_name == '9th' %}selected{% endif %}>9th Class</option>
+                    <option value="10th" {% if student and student.class_name == '10th' %}selected{% endif %}>10th Class</option>
+                    <option value="11th" {% if student and student.class_name == '11th' %}selected{% endif %}>11th Class</option>
+                    <option value="12th" {% if student and student.class_name == '12th' %}selected{% endif %}>12th Class</option>
+                </select>
+            </div>
+
+            <!-- Stream Group Selection (Visible for 11th & 12th) -->
+            <div class="input-group" id="streamGroup" style="display:none; background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba;">
+                <label>संकाय / समूह चुनें (Stream/Group):</label>
+                <select name="stream" id="streamSelect" onchange="handleClassAndStreamChange()">
+                    <option value="Maths" {% if student and student.stream == 'Maths' %}selected{% endif %}>Maths Group (गणित)</option>
+                    <option value="Bio" {% if student and student.stream == 'Bio' %}selected{% endif %}>Biology Group (जीव विज्ञान)</option>
+                    <option value="Commerce" {% if student and student.stream == 'Commerce' %}selected{% endif %}>Commerce Group (वाणिज्य)</option>
+                    <option value="Arts" {% if student and student.stream == 'Arts' %}selected{% endif %}>Arts Group (कला)</option>
+                </select>
+            </div>
+
+            <!-- Dynamic Subjects Box -->
+            <div class="input-group" style="background: #e2e8f0; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                <label style="color: #1e293b;">ऑटोमैटिक चयनित विषय (Subjects):</label>
+                <div id="subjectDisplayBox" style="margin-top: 5px;"></div>
+                <input type="hidden" name="subjects" id="subjectsInput">
+            </div>
+
+            <div class="input-group"><label>1. आवेदक का नाम (Full Name):</label><input type="text" name="name" value="{{ student.name if student else '' }}" required></div>
+            <div class="input-group"><label>2. पिता का पूरा नाम (Father's Name):</label><input type="text" name="father" value="{{ student.father_name if student else (student.father if student else '') }}" required></div>
+            <div class="input-group"><label>3. माता का पूरा नाम (Mother's Name):</label><input type="text" name="mother" value="{{ student.mother_name if student else (student.mother if student else '') }}" required></div>
+            <div class="input-group"><label>4. जन्म तिथि (DOB - DD/MM/YYYY):</label><input type="text" name="dob" value="{{ student.dob if student else '' }}" placeholder="DD/MM/YYYY" required></div>
+
+            <div class="input-group">
+                <label>लिंग (Gender):</label>
+                <select name="gender">
+                    <option value="Boy" {% if student and (student.gender == 'Boy' or student.gender == 'M') %}selected{% endif %}>Male (M)</option>
+                    <option value="Girl" {% if student and (student.gender == 'Girl' or student.gender == 'F') %}selected{% endif %}>Female (F)</option>
+                </select>
+            </div>
+
+            <!-- Caste / Category Dropdown -->
+            <div class="input-group">
+                <label>वर्ग / जाति (Category / Caste):</label>
+                <select name="caste">
+                    <option value="">-- जाति चुनें --</option>
+                    <option value="General" {% if student and student.caste == 'General' %}selected{% endif %}>General</option>
+                    <option value="OBC" {% if student and student.caste == 'OBC' %}selected{% endif %}>OBC</option>
+                    <option value="SC" {% if student and student.caste == 'SC' %}selected{% endif %}>SC</option>
+                    <option value="ST" {% if student and student.caste == 'ST' %}selected{% endif %}>ST</option>
+                </select>
+            </div>
+
+            <div id="extraHighSchoolFields" style="display:none; background: #f8f9fa; padding: 10px; border: 1px dashed #ccc; margin-bottom: 12px; border-radius: 4px;">
+                <h4 style="margin: 0 0 10px 0; color: #444;">MP Board अतिरिक्त विवरण:</h4>
+                <div class="input-group"><label>आवेदक का प्रकार:</label><input type="text" name="applicant_type" value="{{ student.applicant_type if student else 'नियमित-1' }}"></div>
+                <div class="input-group"><label>जिला कोड:</label><input type="text" name="district_code" value="{{ student.district_code if student else '' }}"></div>
+                <div class="input-group"><label>विकास खण्ड कोड:</label><input type="text" name="block_code" value="{{ student.block_code if student else '' }}"></div>
+                <div class="input-group"><label>संस्था कोड:</label><input type="text" name="school_code" value="{{ student.school_code if student else '' }}"></div>
+                <div class="input-group"><label>नामांकन कोड:</label><input type="text" name="enrollment_code" value="{{ student.enrollment_code if student else '' }}"></div>
+                <div class="input-group"><label>संबल क्रमांक:</label><input type="text" name="sambal_no" value="{{ student.sambal_no if student else '' }}"></div>
+            </div>
+
+            <div class="input-group">
+                <label>माध्यम (Medium):</label>
+                <select name="medium">
+                    <option value="HINDI" {% if student and student.medium == 'HINDI' %}selected{% endif %}>Hindi (-1)</option>
+                    <option value="ENGLISH" {% if student and student.medium == 'ENGLISH' %}selected{% endif %}>English (-3)</option>
+                </select>
+            </div>
+
+            <div class="input-group"><label>पत्र व्यवहार का पूरा पता (Address):</label><textarea name="address" rows="2">{{ student.address if student else '' }}</textarea></div>
+            <div class="input-group"><label>मोबाइल नंबर (Mobile No):</label><input type="text" name="mobile" value="{{ student.mobile_no if student else (student.mobile if student else '') }}" maxlength="10" required></div>
+            <div class="input-group"><label>अपार आईडी (APAAR ID):</label><input type="text" name="apaar_id" value="{{ student.apaar_id if student else '' }}"></div>
+            <div class="input-group"><label>समग्र आईडी (SSSMID):</label><input type="text" name="sssmid" value="{{ student.samagra_id if student else (student.sssmid if student else '') }}"></div>
+            <div class="input-group"><label>परिवार आईडी (Family ID):</label><input type="text" name="family_id" value="{{ student.family_id if student else '' }}"></div>
+            <div class="input-group"><label>आधार नंबर (Aadhaar No):</label><input type="text" name="aadhaar" value="{{ student.aadhaar_id if student else (student.aadhaar if student else '') }}" maxlength="12"></div>
+            <div class="input-group"><label>बैंक खाता नंबर (Bank A/C No):</label><input type="text" name="bank_ac" value="{{ student.bank_account if student else (student.bank_ac if student else '') }}"></div>
+            <div class="input-group"><label>IFSC Code:</label><input type="text" name="ifsc" value="{{ student.ifsc_code if student else (student.ifsc if student else '') }}"></div>
+
+            <!-- Image Photo Display and Input Section -->
+            {% if student %}
+                {% set cur_photo = student.photo_path if student.photo_path is defined and student.photo_path else (student.photo_filename if student.photo_filename is defined and student.photo_filename else (student.photo if student.photo is defined else '')) %}
+                <input type="hidden" name="old_photo" value="{{ cur_photo }}">
+            {% endif %}
+
+            <div class="input-group" style="background: #e9ecef; padding: 10px; border-radius: 4px;">
+                <label>छात्र की फोटो (Student Photo):</label>
+                {% if student %}
+                    {% set cur_photo = student.photo_path if student.photo_path is defined and student.photo_path else (student.photo_filename if student.photo_filename is defined and student.photo_filename else (student.photo if student.photo is defined else '')) %}
+                    {% if cur_photo %}
+                        <div style="margin-bottom: 8px;">
+                            <img src="{% if 'static/' in cur_photo %}{{ url_for('static', filename=cur_photo.replace('static/', '')) }}{% else %}{{ url_for('uploaded_file', filename=cur_photo) }}{% endif %}" alt="Student Photo" style="width: 80px; height: 100px; object-fit: cover; border: 1px solid #000; border-radius: 4px;"><br>
+                            <small style="color: green; font-weight: bold;">✓ फोटो मौजूद है (नया अपलोड करने पर बदल जाएगी)</small>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                <input type="file" name="photo" accept="image/*">
+            </div>
+
+            <button type="submit">{% if student %}अपडेट करें{% else %}फॉर्म सेव करें{% endif %}</button>
+        </form>
+    </div>
+
+    <script>
+        function handleClassAndStreamChange() {
+            var cls = document.getElementById("classSelect").value;
+            var stream = document.getElementById("streamSelect").value;
+            var extraBox = document.getElementById("extraHighSchoolFields");
+            var streamBox = document.getElementById("streamGroup");
+            var displayBox = document.getElementById("subjectDisplayBox");
+            var hiddenInput = document.getElementById("subjectsInput");
+
+            // 1. Extra Fields Toggle
+            if (cls === "9th" || cls === "10th" || cls === "11th" || cls === "12th") {
+                extraBox.style.display = "block";
+            } else {
+                extraBox.style.display = "none";
+            }
+
+            // 2. Stream Field Toggle
+            if (cls === "11th" || cls === "12th") {
+                streamBox.style.display = "block";
+            } else {
+                streamBox.style.display = "none";
+            }
+
+            // 3. Subject Mapping Logic
+            var subjectsList = [];
+
+            if (cls === "5th") {
+                subjectsList = ["English", "Hindi", "Mathematics", "Environmental Studies (EVS)"];
+            } else if (cls === "6th" || cls === "7th" || cls === "8th" || cls === "9th" || cls === "10th") {
+                subjectsList = ["English", "Hindi", "Sanskrit", "Mathematics", "Science", "Social Science"];
+            } else if (cls === "11th" || cls === "12th") {
+                if (stream === "Maths") {
+                    subjectsList = ["English", "Hindi", "Mathematics", "Physics", "Chemistry"];
+                } else if (stream === "Bio") {
+                    subjectsList = ["English", "Hindi", "Biology", "Physics", "Chemistry"];
+                } else if (stream === "Commerce") {
+                    subjectsList = ["English", "Hindi", "Accountancy", "Business Studies", "Economics", "IP / Maths (Optional)"];
+                } else if (stream === "Arts") {
+                    subjectsList = ["English", "Hindi", "History", "Sociology", "Economics"];
+                }
+            }
+
+            // UI Render Subjects
+            displayBox.innerHTML = "";
+            subjectsList.forEach(function(sub) {
+                var badge = document.createElement("span");
+                badge.className = "subject-badge";
+                badge.innerText = sub;
+                displayBox.appendChild(badge);
+            });
+
+            hiddenInput.value = subjectsList.join(", ");
+        }
+
+        window.onload = handleClassAndStreamChange;
+    </script>
+</body>
+</html>

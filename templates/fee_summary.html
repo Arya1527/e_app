@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>फीस भुगतान इतिहास - {{ student.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0; background-color: #fff !important; }
+            .card { border: none !important; shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-light py-4">
+<div class="container" style="max-width: 800px;">
+
+    <div class="no-print mb-3 d-flex justify-content-between">
+        <button onclick="window.history.back()" class="btn btn-secondary">⬅️ पीछे जाएँ</button>
+        <button onclick="window.print()" class="btn btn-primary">🖨️ प्रिंट समरी (Print Summary)</button>
+    </div>
+
+    <div class="card p-4 shadow-sm border-0 bg-white">
+        <div class="text-center border-bottom pb-3 mb-3">
+            <h3 class="fw-bold mb-1">स्कूल फीस विवरण / इतिहास (Fee Statement)</h3>
+            <p class="text-muted m-0">सत्र: 2026</p>
+        </div>
+
+        <!-- Student Details Header -->
+        <div class="row mb-3">
+            <div class="col-6">
+                <p class="mb-1"><b>छात्र का नाम:</b> {{ student.name }}</p>
+                <p class="mb-1"><b>पिता का नाम:</b> {{ student.father_name }}</p>
+                <p class="mb-1"><b>स्कॉलर नं (Scholar No):</b> {{ student.scholar_no }}</p>
+            </div>
+            <div class="col-6 text-end">
+                <p class="mb-1"><b>कक्षा:</b> {{ student.class_name }}</p>
+                <p class="mb-1"><b>मोबाइल नं:</b> {{ student.mobile_no or 'N/A' }}</p>
+                <p class="mb-1"><b>रिपोर्ट तिथि:</b> {{ today_date }}</p>
+            </div>
+        </div>
+
+        <!-- Fee Summary Badges -->
+        <div class="row text-center mb-4 bg-light p-3 rounded mx-0">
+            <div class="col-4">
+                <small class="text-muted d-block">कुल निर्धारित फीस</small>
+                <h5 class="fw-bold text-dark m-0">₹{{ total_fee }}</h5>
+            </div>
+            <div class="col-4">
+                <small class="text-muted d-block">कुल जमा फीस</small>
+                <h5 class="fw-bold text-success m-0">₹{{ total_paid }}</h5>
+            </div>
+            <div class="col-4">
+                <small class="text-muted d-block">शेष बकाया (Due)</small>
+                <h5 class="fw-bold text-danger m-0">₹{{ due_amount }}</h5>
+            </div>
+        </div>
+
+        <!-- Transactions Table -->
+        <h6 class="fw-bold mb-2">भुगतान का विवरण (Payment History)</h6>
+        <table class="table table-bordered align-middle">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th>क्र.</th>
+                    <th>दिनांक व समय</th>
+                    <th>रसीद नंबर</th>
+                    <th>भुगतान माध्यम</th>
+                    <th>जमा राशि</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if transactions %}
+                    {% for tx in transactions %}
+                    <tr class="text-center">
+                        <td>{{ loop.index }}</td>
+                        <td>{{ tx.payment_date }}</td>
+                        <td><b>{{ tx.receipt_no }}</b></td>
+                        <td>{{ tx.payment_mode }}</td>
+                        <td class="fw-bold text-success">₹{{ tx.amount_paid }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-3">अभी तक कोई फीस जमा नहीं की गई है।</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <!-- Signatures Footer -->
+        <div class="row mt-5 pt-4 text-center">
+            <div class="col-6">
+                <p class="mb-0">____________________</p>
+                <small class="text-muted">अभिभावक के हस्ताक्षर</small>
+            </div>
+            <div class="col-6">
+                <p class="mb-0">____________________</p>
+                <small class="text-muted">ऑपरेटर / संस्था के हस्ताक्षर</small>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
