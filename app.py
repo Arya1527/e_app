@@ -447,7 +447,7 @@ def send_otp():
 
     otp = str(random.randint(100000, 999999))
     session['generated_otp'] = otp
-           session['user_identity'] = identity
+    session['user_identity'] = identity
 
         print(f"\n==========================================", flush=True)
         print(f"🔑 OTP FOR [{identity}]: {otp}", flush=True)
