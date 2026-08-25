@@ -52,3 +52,4 @@ wcwidth==0.8.2
 Werkzeug==3.1.8
 wheel==0.47.0
 gunicorn 
+qrcode
