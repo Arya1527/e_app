@@ -448,11 +448,10 @@ def send_otp():
     otp = str(random.randint(100000, 999999))
     session['generated_otp'] = otp
     session['user_identity'] = identity
-
-    print(f"\n==========================================")
-    print(f"🔑 OTP FOR [{identity}]: {otp}")
-    print(f"==========================================\n")
-    threading.Thread(target=send_otp_to_admin, args=(otp, identity)).start()
+print(f"\n==========================================", flush=True)
+print(f"🔑 OTP FOR [{identity}]: {otp}", flush=True)
+print(f"==========================================", flush=True)
+threading.Thread(target=send_otp_to_admin, args=(otp, identity)).start()
 
     flash(f'✅ OTP आपके पंजीकृत ईमेल पर भेज दिया गया है!', 'info')
     return redirect(url_for('verify_otp_page'))
