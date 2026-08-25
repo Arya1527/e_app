@@ -447,21 +447,16 @@ def send_otp():
 
     otp = str(random.randint(100000, 999999))
     session['generated_otp'] = otp
-    session['user_identity'] = identity
-print(f"\n==========================================", flush=True)
-print(f"🔑 OTP FOR [{identity}]: {otp}", flush=True)
-print(f"==========================================", flush=True)
-threading.Thread(target=send_otp_to_admin, args=(otp, identity)).start()
+           session['user_identity'] = identity
 
-    flash(f'✅ OTP आपके पंजीकृत ईमेल पर भेज दिया गया है!', 'info')
-    return redirect(url_for('verify_otp_page'))
+        print(f"\n==========================================", flush=True)
+        print(f"🔑 OTP FOR [{identity}]: {otp}", flush=True)
+        print(f"==========================================", flush=True)
 
-@app.route('/verify_otp_page')
-def verify_otp_page():
-    if 'generated_otp' not in session:
-        return redirect(url_for('login'))
-    return render_template('verify_otp.html')
+        threading.Thread(target=send_otp_to_admin, args=(otp, identity)).start()
 
+        flash('✅ OTP आपके पंजीकृत ईमेल पर भेज दिया गया है!', 'info')
+        return redirect(url_for('verify_otp_page'))
 @app.route('/verify_otp', methods=['POST'])
 def verify_otp():
     entered_otp = request.form.get('otp', '').strip()
