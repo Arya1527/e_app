@@ -83,6 +83,26 @@
             letter-spacing: 0.5px;
         }
 
+        /* Mobile Optimization Styles */
+        @media screen and (max-width: 576px) {
+            body {
+                padding: 4px !important;
+            }
+            .main-card {
+                padding: 12px !important;
+                border-radius: 12px;
+            }
+            .header-card h2 {
+                font-size: 1.25rem;
+            }
+            .stat-card {
+                padding: 12px;
+            }
+            .stat-card .fs-1 {
+                font-size: 1.6rem !important;
+            }
+        }
+
         @media print {
             .no-print { display: none !important; }
             body { background: white; }
@@ -118,7 +138,7 @@
     <div class="row g-3 mb-4 no-print">
         
         <!-- Category 1: Student Management -->
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="nav-section-card h-100">
                 <h6 class="fw-bold text-primary mb-3"><i class="bi bi-people-fill me-1"></i> छात्र प्रबंधन (Students)</h6>
                 <div class="d-grid gap-2">
@@ -139,7 +159,7 @@
         </div>
 
         <!-- Category 2: Academics & Exams -->
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="nav-section-card h-100">
                 <h6 class="fw-bold text-success mb-3"><i class="bi bi-journal-bookmark-fill me-1"></i> परीक्षा व परिणाम (Academics)</h6>
                 <div class="d-grid gap-2">
@@ -160,7 +180,7 @@
         </div>
 
         <!-- Category 3: Attendance & Reports -->
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="nav-section-card h-100">
                 <h6 class="fw-bold text-warning mb-3 text-dark"><i class="bi bi-calendar-check-fill me-1"></i> उपस्थिति व रिपोर्ट्स (Attendance)</h6>
                 <div class="d-grid gap-2">
@@ -175,7 +195,6 @@
                     </a>
                     <a href="{{ url_for('teacher_attendance') }}" class="btn btn-outline-warning btn-sm text-start fw-semibold text-dark">
                         <i class="bi bi-person-check me-2"></i> Teacher Attendance
-
                     </a>
                     <a href="{{ url_for('teacher_attendance_report') }}" class="btn btn-outline-warning btn-sm text-start fw-semibold text-dark">
                         <i class="bi bi-file-text me-2"></i> Teacher Attendance Report
@@ -186,17 +205,16 @@
 
     </div>
 
-<!-- परीक्षा फॉर्म भरने और प्रिंट करने का नेविगेशन लिंक -->
-<div style="margin: 20px 0; text-align: right;">
-    <a href="/exam_application_form" style="background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-        📝 नया परीक्षा फॉर्म भरें / एडिट करें
-    </a>
-</div>
-
+    <!-- परीक्षा फॉर्म भरने और प्रिंट करने का नेविगेशन लिंक -->
+    <div class="my-3 text-end no-print">
+        <a href="/exam_application_form" class="btn btn-success fw-bold shadow-sm d-inline-block w-100 w-md-auto">
+            📝 नया परीक्षा फॉर्म भरें / एडिट करें
+        </a>
+    </div>
 
     <!-- Secondary Dropdown Menu Bar for Extra Tools -->
     <div class="dropdown mb-4 no-print text-center">
-        <button class="btn btn-dark dropdown-toggle px-4 py-2 rounded-pill fw-bold shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <button class="btn btn-dark dropdown-toggle px-4 py-2 rounded-pill fw-bold shadow-sm w-100 w-md-auto" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-tools me-2"></i> अन्य प्रबंधन एवं सेटिंग्स (Other Tools & Settings) ⚙️
         </button>
         <ul class="dropdown-menu shadow p-2" style="border-radius: 12px; min-width: 250px;">
@@ -214,19 +232,19 @@
 
     <!-- Stats -->
     <div class="row g-3 mb-4 no-print">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="stat-card stat-total shadow-sm">
                 <div class="fs-6 text-uppercase">कुल छात्र (Results)</div>
                 <div class="fs-1 fw-bold">{{ stats.total }}</div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="stat-card stat-top shadow-sm">
                 <div class="fs-6 text-uppercase">80%+ अंक (Top Performance)</div>
                 <div class="fs-1 fw-bold">{{ stats.above_80 }}</div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="stat-card stat-fail shadow-sm">
                 <div class="fs-6 text-uppercase">अनुत्तीर्ण (Fail Students)</div>
                 <div class="fs-1 fw-bold">{{ stats.fail }}</div>
@@ -236,7 +254,7 @@
 
     <!-- Search / Filter -->
     <form method="GET" action="{{ url_for('index') }}" class="row g-2 mb-4 no-print align-items-center bg-light p-3 rounded-3 border shadow-sm">
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
             <select name="class_name" id="classSelect" class="form-select form-select-sm">
                 <option value="">-- सभी कक्षाएं --</option>
                 {% for c in ['Nursery','LKG','UKG','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'] %}
@@ -244,17 +262,17 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
             <select name="filter" class="form-select form-select-sm">
                 <option value="">-- फ़िल्टर चुनें --</option>
                 <option value="above_80" {% if request.args.get('filter')=='above_80' %}selected{% endif %}>80%+ Top Performers</option>
                 <option value="fail" {% if request.args.get('filter')=='fail' %}selected{% endif %}>Fail Students</option>
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-md-3">
             <input type="text" name="search" id="searchInput" value="{{ request.args.get('search','') }}" class="form-control form-control-sm" placeholder="Search Name/Roll/Scholar...">
         </div>
-        <div class="col-md-3 d-flex gap-1">
+        <div class="col-12 col-sm-6 col-md-3 d-flex gap-1">
             <button type="submit" class="btn btn-primary btn-sm w-50 fw-bold">
                 <i class="bi bi-search"></i> Search
             </button>
