@@ -16,19 +16,27 @@
         .subject-card:hover { border-color: #0d6efd; box-shadow: 0 4px 12px rgba(13, 110, 253, 0.08); }
         .is-invalid-custom { border-color: #dc3545 !important; background-color: #fff8f8 !important; }
         .status-badge { font-size: 0.8rem; padding: 0.35em 0.65em; }
+
+        /* Mobile View Tweaks */
+        @media screen and (max-width: 576px) {
+            body { padding-top: 10px !important; padding-bottom: 10px !important; }
+            .card-custom { padding: 15px !important; }
+            .form-section-title { font-size: 1.2rem; }
+            .header-bar { flex-direction: column; align-items: flex-start !important; gap: 8px; }
+        }
     </style>
 </head>
 <body class="py-4">
 
 <div class="container" style="max-width: 920px;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 header-bar">
         <a href="/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
             <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
         </a>
         <span class="badge bg-primary fs-6 fw-normal rounded-pill px-3">Academic Session 2026</span>
     </div>
 
-    <div class="card card-custom p-4 bg-white">
+    <div class="card card-custom p-3 p-md-4 bg-white">
         <h3 class="form-section-title d-flex align-items-center gap-2">
             <i class="fa-solid fa-pen-to-square text-primary"></i>
             Teacher Marks Entry Panel
@@ -37,7 +45,7 @@
         <form method="POST" id="marksForm" novalidate>
             <div class="card bg-light border-0 p-3 mb-4 rounded-3">
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-semibold text-secondary">Search Scholar No / Roll No</label>
                         <div class="input-group">
                             <input type="text" id="search_query" class="form-control" placeholder="Type Scholar No & Search...">
@@ -46,11 +54,11 @@
                             </button>
                         </div>
                     </div>
-                    <div class="col-md-3 col-6">
+                    <div class="col-6 col-md-3">
                         <label class="form-label fw-semibold text-secondary">Scholar ID</label>
                         <input type="text" id="scholar_no" name="scholar_no" class="form-control bg-warning bg-opacity-10 fw-bold border-warning" readonly required>
                     </div>
-                    <div class="col-md-3 col-6">
+                    <div class="col-6 col-md-3">
                         <label class="form-label fw-semibold text-secondary">Roll No <span class="text-danger">*</span></label>
                         <input type="text" id="roll_no" name="roll_no" class="form-control" required>
                     </div>
@@ -58,22 +66,22 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label fw-medium">Student Name <span class="text-danger">*</span></label>
                     <input type="text" id="name" name="name" class="form-control" required>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label fw-medium">Father's Name</label>
                     <input type="text" id="father_name" name="father_name" class="form-control">
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label fw-medium">DOB</label>
                     <input type="date" id="dob" name="dob" class="form-control">
                 </div>
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-md-3">
                     <label class="form-label fw-medium">Class <span class="text-danger">*</span></label>
                     <select name="class_name" id="class_select" class="form-select" required onchange="renderSubjects()">
                         <option value="">Select Class</option>
@@ -83,17 +91,17 @@
                     </select>
                 </div>
                 
-                <!-- NEW EXAM TYPE DROPDOWN -->
-         <div class="col-md-3">
-             <label class="form-label fw-medium">Exam Type <span class="text-danger">*</span></label>
-           <select name="exam_type" id="exam_type_select" class="form-select" required>
-        <option value="First Terminal Exam" selected>First Terminal Exam</option>
-        <option value="Second Terminal Exam">Second Terminal Exam</option>
-        <option value="Annual Exam">Annual Exam</option>
-    </select>
-           </div>
+                <!-- EXAM TYPE DROPDOWN -->
+                <div class="col-12 col-sm-6 col-md-3">
+                    <label class="form-label fw-medium">Exam Type <span class="text-danger">*</span></label>
+                    <select name="exam_type" id="exam_type_select" class="form-select" required>
+                        <option value="First Terminal Exam" selected>First Terminal Exam</option>
+                        <option value="Second Terminal Exam">Second Terminal Exam</option>
+                        <option value="Annual Exam">Annual Exam</option>
+                    </select>
+                </div>
 
-                <div class="col-md-3" id="group_box" style="display:none;">
+                <div class="col-12 col-sm-6 col-md-3" id="group_box" style="display:none;">
                     <label class="form-label fw-medium">Stream / Group</label>
                     <select name="group_name" id="group_select" class="form-select" onchange="renderSubjects()">
                         <option value="Commerce">Commerce</option>
@@ -102,14 +110,14 @@
                         <option value="Arts">Arts</option>
                     </select>
                 </div>
-                <div class="col-md-3" id="optional_sub_box" style="display:none;">
+                <div class="col-12 col-sm-6 col-md-3" id="optional_sub_box" style="display:none;">
                     <label class="form-label fw-medium">Optional Subject Choice</label>
                     <select name="optional_subject" id="optional_select" class="form-select" onchange="renderSubjects()">
                         <option value="Informatics_Practices">Informatics Practices</option>
                         <option value="Economics">Economics</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-sm-6 col-md-3">
                     <label class="form-label fw-medium">Teacher Name</label>
                     <input type="text" name="teacher_name" class="form-control" placeholder="Enter evaluator name">
                 </div>
@@ -211,7 +219,7 @@ function renderSubjects() {
     subjects.forEach(sub => {
         let limits = getSubjectLimits(cls, sub);
         let div = document.createElement('div');
-        div.className = 'col-md-6';
+        div.className = 'col-12 col-md-6';
         div.innerHTML = `
             <div class="card subject-card p-3 rounded-3 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-2">
