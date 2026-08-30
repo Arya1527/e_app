@@ -6,16 +6,26 @@
     <title>Report Card - {{ student.name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f8f9fa; font-family: 'Times New Roman', serif; padding: 20px; }
-        .card-container { max-width: 800px; margin: auto; background: white; padding: 30px; border: 3px double #000; border-radius: 8px; }
-        .header-title { text-transform: uppercase; font-weight: bold; font-size: 24px; text-align: center; }
-        .sub-header { text-align: center; font-size: 16px; margin-bottom: 20px; font-weight: bold; }
-        .signature-box { margin-top: 60px; display: flex; justify-content: space-between; text-align: center; }
-        .sig-line { border-top: 1px solid #000; width: 200px; margin-top: 40px; padding-top: 5px; font-weight: bold; }
+        body { background: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+        .card-container { max-width: 850px; margin: auto; background: white; padding: 30px; border: 1px solid #dee2e6; border-radius: 8px; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+        .scorecard-header { border-bottom: 2px solid #0d6efd; padding-bottom: 12px; margin-bottom: 20px; }
+        
+        /* Mini Table Styling */
+        .student-info-table { border: 1px solid #dee2e6; }
+        .student-info-table td { padding: 6px 12px; font-size: 14px; vertical-align: middle; }
+        .student-info-table .label { font-weight: 600; width: 22%; background-color: #f8f9fa; color: #333; }
+        
+        /* Marks Table Styling */
+        .marks-table th { background-color: #212529 !important; color: #fff; font-size: 14px; text-align: center; }
+        .marks-table td { font-size: 14px; vertical-align: middle; }
+
+        .signature-box { margin-top: 40px; display: flex; justify-content: space-between; text-align: center; }
+        .sig-line { border-top: 1px solid #333; width: 220px; margin: 0 auto; padding-top: 5px; font-weight: 600; font-size: 14px; }
+        
         @media print {
             .no-print { display: none !important; }
             body { padding: 0; background: white; }
-            .card-container { border: 2px solid #000; box-shadow: none; }
+            .card-container { border: none !important; box-shadow: none !important; padding: 15px; }
         }
     </style>
 </head>
@@ -34,116 +44,127 @@
         <option value="Quarterly Examination Report Sheet">Quarterly Examination Report Sheet</option>
     </select>
 
-    <button onclick="window.print()" class="btn btn-primary">🖨️ Print Marksheet</button>
+    <button onclick="window.print()" class="btn btn-success">🖨️ प्रिंट / डाउनलोड स्कोर कार्ड</button>
 </div>
 
 <div class="card-container">
-<div class="card-container">
     <!-- Dynamic School Header with Logo & QR Code -->
-    <div class="scorecard-header" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 15px;">
+    <div class="scorecard-header d-flex align-items-center justify-content-between">
         <!-- School Logo -->
-        <div style="width: 100px;">
+        <div style="width: 90px;">
             {% if settings and settings.logo_path %}
-            <img src="/static/{{ settings.logo_path }}" style="max-width: 90px; max-height: 90px; object-fit: contain;">
+            <img src="/static/{{ settings.logo_path }}" style="max-width: 85px; max-height: 85px; object-fit: contain;">
             {% else %}
-            <div style="width:80px; height:80px; border:1px dashed #ccc; text-align:center; line-height:80px; font-size:10px; color:#aaa;">No Logo</div>
+            <div style="width:80px; height:80px; border:1px dashed #ccc; text-align:center; line-height:80px; font-size:11px; color:#aaa;">No Logo</div>
             {% endif %}
         </div>
 
         <!-- School Details -->
-        <div style="text-align: center; flex-grow: 1;">
-            <h2 style="margin: 0; color: #007bff; font-weight: bold;">{{ settings.school_name if settings and settings.school_name else 'JYOTI NIKETAN H.S SCHOOL' }}</h2>
-            <p style="margin: 3px 0; font-size: 13px;">{{ settings.address if settings and settings.address else 'School Address Here' }} | Phone: {{ settings.phone if settings and settings.phone else 'N/A' }}</p>
-            <h4 id="examTitle" style="margin: 5px 0; background: #007bff; color: white; display: inline-block; padding: 4px 15px; border-radius: 12px; font-size: 14px;">
-                {{ student.exam_type }} ({{ settings.session if settings and settings.session else '2026-27' }})
-            </h4>
+        <div class="text-center flex-grow-1 px-2">
+            <h3 class="fw-bold text-primary mb-1 text-uppercase">{{ settings.school_name if settings and settings.school_name else 'JYOTI NIKETAN H.S SCHOOL' }}</h3>
+            <p class="text-muted mb-1 small">{{ settings.address if settings and settings.address else 'School Address Here' }} | Phone: {{ settings.phone if settings and settings.phone else 'N/A' }}</p>
+            <h6 class="mt-1 text-decoration-underline fw-bold text-dark">STUDENT MARKSHEET / SCORE CARD</h6>
+            <div class="mt-1">
+                <span id="examTitle" class="badge bg-primary px-3 py-1 font-monospace" style="font-size: 13px;">
+                    {{ student.exam_type }} ({{ settings.session if settings and settings.session else '2026-27' }})
+                </span>
+            </div>
         </div>
 
         <!-- Student QR Code -->
-        <div style="width: 100px; text-align: right;">
-            <img src="{{ url_for('student_qr', scholar_no=student.scholar_no) }}" style="width: 80px; height: 80px; border: 1px solid #ccc; padding: 2px;" alt="QR Code">
+        <div style="width: 90px; text-align: right;">
+            <img src="{{ url_for('student_qr', scholar_no=student.scholar_no) }}" style="width: 80px; height: 80px; border: 1px solid #dee2e6; padding: 2px; border-radius: 4px;" alt="QR Code">
         </div>
     </div>
 
-    <!-- Student Details Table (इसके नीचे आपका पुराना स्टूडेंट डिटेल्स वाला टेबल रहेगा) -->
-
-
-    <!-- Student Details -->
-    <table class="table table-borderless mb-3">
-        <tr>
-            <td><strong>Student Name:</strong> {{ student.name }}</td>
-            <td><strong>Scholar No:</strong> {{ student.scholar_no }}</td>
-        </tr>
-        <tr>
-            <td><strong>Father's Name:</strong> {{ student.father_name }}</td>
-            <td><strong>Roll No:</strong> {{ student.roll_no }}</td>
-        </tr>
-        <tr>
-            <td>
-                <strong>Class:</strong> {{ student.class_name }}
-                {% if student.class_name in ['11th', '12th'] and student.group_name %}
-                    ({{ student.group_name }})
-                {% endif %}
-            </td>
-<td>
-    <strong>DOB:</strong> 
-    {% if student.dob %}
-        {{ student.dob.split('-')[2] }}-{{ student.dob.split('-')[1] }}-{{ student.dob.split('-')[0] }}
-    {% else %}
-        N/A
-    {% endif %}
-</td>
-          
-
-        </tr>
+    <!-- Student Details Mini Table -->
+    <table class="table table-bordered student-info-table mb-3">
+        <tbody>
+            <tr>
+                <td class="label">Student Name</td>
+                <td class="fw-bold text-uppercase">{{ student.name }}</td>
+                <td class="label">Roll No</td>
+                <td class="fw-bold">{{ student.roll_no }}</td>
+            </tr>
+            <tr>
+                <td class="label">Father's Name</td>
+                <td>{{ student.father_name }}</td>
+                <td class="label">Scholar No</td>
+                <td>{{ student.scholar_no if student.scholar_no else '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Date of Birth</td>
+                <td>
+                    {% if student.dob %}
+                        {{ student.dob.split('-')[2] }}-{{ student.dob.split('-')[1] }}-{{ student.dob.split('-')[0] }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="label">Class & Section</td>
+                <td>
+                    {{ student.class_name }}
+                    {% if student.class_name in ['11th', '12th'] and student.group_name %}
+                        ({{ student.group_name }})
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td class="label">Exam Type</td>
+                <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ student.exam_type }}</span></td>
+                <td class="label">Status</td>
+                <td>
+                    <span class="fw-bold {{ 'text-success' if student.result == 'Pass' else 'text-danger' }}">
+                        {{ student.result }}
+                    </span>
+                </td>
+            </tr>
+        </tbody>
     </table>
 
     <!-- Marks Table -->
-    <table class="table table-bordered text-center align-middle">
-        <thead class="table-light">
+    <table class="table table-bordered text-center align-middle marks-table mb-3">
+        <thead>
             <tr>
-                <th>Subject</th>
-                <th>Theory Marks</th>
-                <th>Project/Practical</th>
-                <th>Total Marks</th>
-                <th>Status</th>
+                <th class="text-start">Subject Name</th>
+                <th style="width: 18%;">Theory</th>
+                <th style="width: 22%;">Practical / Project</th>
+                <th style="width: 18%;">Total Marks</th>
+                <th style="width: 15%;">Status</th>
             </tr>
         </thead>
         <tbody>
             {% for sub, marks in student.scores.items() %}
             <tr>
-                <td class="text-start"><strong>{{ sub.replace('_', ' ') }}</strong></td>
-                <td>{{ marks.theory | int }}</td>
-                <td>{{ marks.project | int if marks.project is defined else '-' }}</td>
-                <td><strong>{{ marks.total | int }}</strong></td>
+                <td class="fw-semibold text-start">{{ sub.replace('_', ' ') }}</td>
+                <td>{{ marks.theory | int if marks.theory is defined else '-' }}</td>
+                <td>{{ marks.project | int if (marks.project is defined and marks.project != '') else '-' }}</td>
+                <td><strong>{{ marks.total | int if marks.total is defined else '-' }}</strong></td>
                 <td>
-                    {% if marks.status == 'Pass' %}
-                    <span class="text-success fw-bold">PASS</span>
-                    {% else %}
-                    <span class="text-danger fw-bold">FAIL</span>
-                    {% endif %}
+                    <span class="badge {{ 'bg-success' if marks.status == 'Pass' else 'bg-danger' }}">
+                        {{ marks.status }}
+                    </span>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
-        <tfoot>
-            <tr class="table-secondary">
-                <td colspan="3" class="text-end"><strong>Grand Total & Percentage:</strong></td>
-                <td><strong>{{ student.total_obtained }} / {{ student.total_max }}</strong></td>
-                <td><strong>{{ student.percentage }}%</strong></td>
-            </tr>
-            <tr>
-                <td colspan="3" class="text-end"><strong>Final Result:</strong></td>
-                <td colspan="2">
-                    {% if student.result == 'Pass' %}
-                    <span class="badge bg-success fs-6">PASSED</span>
-                    {% else %}
-                    <span class="badge bg-danger fs-6">FAILED</span>
-                    {% endif %}
-                </td>
-            </tr>
-        </tfoot>
     </table>
+
+    <!-- Grand Total & Summary Box -->
+    <div class="row pt-2 pb-2 bg-light border rounded mx-0 mb-4 align-items-center">
+        <div class="col-4">
+            <strong>Grand Total:</strong> {{ student.total_obtained | int if student.total_obtained == (student.total_obtained | int) else student.total_obtained }} / {{ student.total_max | int if student.total_max == (student.total_max | int) else student.total_max }}
+        </div>
+        <div class="col-4 text-center">
+            <strong>Percentage:</strong> <span class="fw-bold text-dark">{{ "%.2f"|format(student.percentage | float) }}%</span>
+        </div>
+        <div class="col-4 text-end">
+            <strong>Result:</strong>
+            <span class="fw-bold {{ 'text-success' if student.result == 'Pass' else 'text-danger' }}">
+                {{ student.result }}
+            </span>
+        </div>
+    </div>
 
     <!-- Signatures Section -->
     <div class="signature-box">
@@ -151,21 +172,24 @@
             <div class="sig-line">
                 {{ student.teacher_name or 'Class Teacher' }}
             </div>
-            <small class="text-muted">(Class Teacher Signature)</small>
+            <small class="text-muted">Class Teacher Signature</small>
         </div>
 
         <div>
             <div class="sig-line">
-                {{ principal_name }}
+                {{ principal_name or 'Principal' }}
             </div>
-            <small class="text-muted">(Principal Signature)</small>
+            <small class="text-muted">Principal Signature</small>
         </div>
     </div>
 </div>
 
 <script>
     function updateExamTitle(value) {
-        document.getElementById('examTitle').innerText = value;
+        var examBadge = document.getElementById('examTitle');
+        if(examBadge) {
+            examBadge.innerText = value;
+        }
     }
 </script>
 
