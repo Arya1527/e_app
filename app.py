@@ -22,9 +22,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # ==================== CONFIG / SETTINGS HELPER ====================
 CONFIG_FILE = 'school_config.json'
-
-
-   def get_school_config():
+    def get_school_config():
     default_config = {
         "school_name": "JYOTI NIKETAN H.S SCHOOL",
         "principal_name": "R.S Dwivedi",
@@ -40,7 +38,7 @@ CONFIG_FILE = 'school_config.json'
             print("Config read error:", e)
             return default_config
     return default_config
-def save_school_config(data):
+    def save_school_config(data):
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
