@@ -23,23 +23,23 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # ==================== CONFIG / SETTINGS HELPER ====================
 CONFIG_FILE = 'school_config.json'
 
-def get_school_config():
-   default_config = {
-    "school_name": "JYOTI NIKETAN H.S SCHOOL",
-    "principal_name": "R.S Dwivedi",
-    "school_address": "School Address Here",
-    "academic_session": "2026",
-    "logo_path": "images/logo.png",
-}
+
+   def get_school_config():
+    default_config = {
+        "school_name": "JYOTI NIKETAN H.S SCHOOL",
+        "principal_name": "R.S Dwivedi",
+        "school_address": "School Address Here",
+        "academic_session": "2026",
+        "logo_path": "images/logo.png",
+    }
     if os.path.exists(CONFIG_FILE):
         try:
-            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
             print("Config read error:", e)
             return default_config
     return default_config
-
 def save_school_config(data):
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
