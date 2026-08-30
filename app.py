@@ -24,12 +24,13 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 CONFIG_FILE = 'school_config.json'
 
 def get_school_config():
-    default_config = {
-        "school_name": "JYOTI NIKETAN H.S SCHOOL",
-        "principal_name": "R.S Dwivedi",
-        "school_address": "School Address Here",
-        "academic_session": "2026"
-    }
+   default_config = {
+    "school_name": "JYOTI NIKETAN H.S SCHOOL",
+    "principal_name": "R.S Dwivedi",
+    "school_address": "School Address Here",
+    "academic_session": "2026",
+    "logo_path": "images/logo.png",
+}
     if os.path.exists(CONFIG_FILE):
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
